@@ -167,6 +167,8 @@ private:
 	QString errorMsg;
 	bool verifyBufferReadback;
 	QString pendingBufferExpectedData;
+	bool verifySystemReadback;
+	QString pendingSystemExpectedData;
 };
 
 #endif // SYSXIO_H

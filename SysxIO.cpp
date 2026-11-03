@@ -147,6 +147,7 @@ SysxIO::SysxIO()
 	this->setDeviceReady(true);
 	this->setSyncStatus(false);
 	this->verifyBufferReadback = false;
+	this->verifySystemReadback = false;
 	this->setNoError(true);
 	this->setBank(0);
 	this->setPatch(0);
@@ -594,6 +595,21 @@ void SysxIO::resetDevice(QString replyMsg)
         emit setStatusMessage(tr("Verify patch buffer"));
         MidiTable *midiTable = MidiTable::Instance();
         sendSysx(midiTable->patchRequest(0, 0)); // Read the temporary patch buffer at 0x60:00.
+        return;
+    }
+    if (this->verifySystemReadback)
+    {
+        if (!isConnected())
+        {
+            this->verifySystemReadback = false;
+            this->pendingSystemExpectedData.clear();
+            setSyncStatus(false);
+            setDeviceReady(true);
+            emit errorSignal(tr("System Write Verification"), tr("GT-10 disconnected before System readback"));
+            return;
+        }
+        setDeviceReady(true);
+        systemDataRequest(); // Read the System area back before reporting it synchronized.
         return;
     }
 
@@ -1281,6 +1297,15 @@ void SysxIO::systemWrite()
 		}; 
 	}; 
 	setNoError(true);
+	this->pendingSystemExpectedData = gt10SysxPayload(sysxMsg, true);
+	if (this->pendingSystemExpectedData.isEmpty())
+	{
+		setSyncStatus(false);
+		setDeviceReady(true);
+		emit errorSignal(tr("System Write Verification"), tr("could not prepare valid System data for readback verification"));
+		return;
+	}
+	this->verifySystemReadback = true;
 	setSyncStatus(false); // Keep this write unverified until readback succeeds.
 	QObject::disconnect(this, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString)));
 	QObject::connect(this, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString)));
@@ -1317,6 +1342,7 @@ void SysxIO::systemDataRequest()
 
 void SysxIO::systemReply(QString replyMsg)
 {
+	const bool verifyingSystemWrite = this->verifySystemReadback;
 	QObject::disconnect(this, SIGNAL(sysxReply(QString)), this, SLOT(systemReply(QString)));
 	setDeviceReady(true); // Free the device after finishing interaction.
   
@@ -1404,15 +1430,35 @@ void SysxIO::systemReply(QString replyMsg)
   };    
 	replyMsg = reBuild.simplified().toUpper().remove("0X").remove(" ");
 		
+		const QString actualSystemPayload = gt10SysxPayload(replyMsg, true);
+		const bool systemWriteVerified = !verifyingSystemWrite ||
+		    (!actualSystemPayload.isEmpty() && actualSystemPayload == this->pendingSystemExpectedData);
 		QString area = "System";
 		setFileSource(area, replyMsg);		// Set the source to the data received.
 		setFileName(tr("System Data from ") + deviceType);	// Set the file name to GT-10B system for the display.
 		setDevice(true);				// Patch received from the device so this is set to true.
-		setSyncStatus(true);			// We can't be more in sync than right now! :)
+		if (systemWriteVerified)
+		{
+			setSyncStatus(true);
+			if (verifyingSystemWrite)
+				emit setStatusdBugMessage(tr("GT-10 System write readback verified"));
+		}
+		else
+		{
+			setSyncStatus(false);
+			setNoError(false);
+			emit errorSignal(tr("System Write Verification"), tr("GT-10 System readback did not match the data sent"));
+		}
 		
 		}
 		else
 		{
+			if (verifyingSystemWrite)
+			{
+				setSyncStatus(false);
+				setNoError(false);
+				emit errorSignal(tr("System Write Verification"), tr("GT-10 returned an invalid System readback"));
+			}
 			QMessageBox *msgBox = new QMessageBox();
 			msgBox->setWindowTitle(deviceType + tr(" Fx FloorBoard connection Error !!"));
 			msgBox->setIcon(QMessageBox::Warning);
@@ -1428,6 +1474,13 @@ void SysxIO::systemReply(QString replyMsg)
 			msgBox->exec();
 		};
    };
+	if (verifyingSystemWrite)
+	{
+		if (!noError())
+			setSyncStatus(false);
+		this->verifySystemReadback = false;
+		this->pendingSystemExpectedData.clear();
+	}
 		emit setStatusMessage(tr("Ready"));   
 };
 
