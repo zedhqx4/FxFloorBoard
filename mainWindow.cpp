@@ -86,15 +86,6 @@ mainWindow::mainWindow()
     QObject::connect(fxsBoard, SIGNAL( sizeChanged(QSize, QSize) ),
                      this, SLOT( updateSize(QSize, QSize) ) );
 
-    Preferences *preferences = Preferences::Instance();
-    bool ok;
-    int count = (preferences->getPreferences("General", "Start", "count").toInt(&ok, 10));
-    if(count == 0 && preferences->getPreferences("General", "Donate", "url")!="true")
-    { donate(); };
-    count++;
-    if(count >= 8) {count = 0; };
-    QString index = QString::number(count, 10).toUpper();
-    preferences->setPreferences("General", "Start", "count", index);
 }
 
 mainWindow::~mainWindow()
@@ -226,10 +217,6 @@ void mainWindow::createActions()
     homepageAct->setWhatsThis(tr("download Webpage for FxFloorBoard<br>find if the latest version is available."));
     connect(homepageAct, SIGNAL(triggered()), this, SLOT(homepage()));
 
-    donationAct = new QAction(QIcon(":/images/donate.png"), tr("Donation for Gumtown if you appreciate this software"), this);
-    donationAct->setWhatsThis(tr("Even though the software is free,<br>an occassional donation is very much appreciated<br>i am not paid for this work."));
-    connect(donationAct, SIGNAL(triggered()), this, SLOT(donate()));
-
     manualAct = new QAction(QIcon(":/images/manual.png"), tr("User Manual PDF"), this);
     manualAct->setWhatsThis(tr("........"));
     connect(manualAct, SIGNAL(triggered()), this, SLOT(manual()));
@@ -284,8 +271,6 @@ void mainWindow::createMenus()
     helpMenu->addAction(helpAct);
     helpMenu->addAction(whatsThisAct);
     helpMenu->addAction(homepageAct);
-    helpMenu->addSeparator();
-    helpMenu->addAction(donationAct);
     helpMenu->addSeparator();
     helpMenu->addAction(manualAct);
     helpMenu->addAction(licenseAct);
@@ -777,12 +762,6 @@ void mainWindow::homepage()
 {
     //Preferences *preferences = Preferences::Instance();
     QDesktopServices::openUrl(QUrl( "http://sourceforge.net/projects/fxfloorboard/" ));
-}
-
-void mainWindow::donate()
-{
-    //Preferences *preferences = Preferences::Instance();
-    QDesktopServices::openUrl(QUrl("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9B7Z6AQLF86WW" ));
 }
 
 void mainWindow::manual()
