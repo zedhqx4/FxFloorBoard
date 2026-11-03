@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -23,13 +23,15 @@
 
 #ifndef MIDIIO_H
 #define MIDIIO_H
-//#include <vector>
+#include <vector>
 #include <QThread>
 #include <QString>
 #include <QStringList>
 #include <QList>
-
-class midiIODestroyer;
+#include <QMutex>
+#ifdef Q_OS_LINUX
+#include <atomic>
+#endif
 
 class midiIO: public QThread
 {
@@ -37,18 +39,14 @@ class midiIO: public QThread
 
 public:
 	midiIO();
-  static midiIO* Instance();
+	void run();
 	void sendSysxMsg(QString sysxOutMsg, int midiOutport, int midiInPort);
 	void sendMidi(QString midiMsg, int midiOutport);
 	void callbackMsg(QString rxData);
+	void reportMidiBackendError(QString windowTitle, QString errorMessage);
 	QList<QString> getMidiOutDevices();
 	QList<QString> getMidiInDevices();
-  static QString sysxBuffer;
-		      
-protected :
-    friend class midiIODestroyer;
-    virtual ~midiIO() { }        
-
+		
 signals:
 	void errorSignal(QString windowTitle, QString errorMsg);
 	void replyMsg(QString sysxInMsg);
@@ -60,20 +58,21 @@ signals:
   void setStatusdBugMessage(QString dBug);
 		
 private:
-  static midiIO* _instance;
-  static midiIODestroyer _destroyer;
 	void queryMidiInDevices();
 	void queryMidiOutDevices();
 	void sendSyxMsg(QString sysxOutMsg, int midiOutport);
 	void sendMidiMsg(QString sysxOutMsg, int midiOutport);
+	void receiveMsg(int midiInPort);
 	QList<QString> midiOutDevices;
 	QList<QString> midiInDevices;
-	void run();
-  void receiveMsg(int midiInPort);
-	static QString msgType;
-	static bool dataReceive;
-	static int bytesTotal;
-	static int bytesReceived;
+	
+	QString msgType;
+	int loopCount;
+	QString sysxBuffer;
+	QMutex sysxBufferMutex;
+#ifdef Q_OS_LINUX
+	std::atomic<bool> midiBackendErrorOccurred;
+#endif
 	int midiOutPort;
 	int midiInPort;
 	QString sysxOutMsg;
