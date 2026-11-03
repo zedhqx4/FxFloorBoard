@@ -101,7 +101,13 @@ void midiIO::queryMidiOutDevices()
     error.printMessage();
     emit errorSignal(tr("Midi Output Error"), tr("port error"));
     goto cleanup; };
-  outPorts = midiout->getPortCount();      /* Check outputs. */
+  try { outPorts = midiout->getPortCount(); }
+  catch (MidiBackendError &error) {
+    error.printMessage();
+    emit errorSignal(tr("Midi Output Error"), tr("enumeration error"));
+    this->midiOutDevices.push_back(tr("no midi device available"));
+    goto cleanup;
+  };
   for ( unsigned int i=0; i<outPorts; i++ ) {
     try {
       portName = midiout->getPortName(i);
@@ -152,7 +158,13 @@ void midiIO::queryMidiInDevices()
     error.printMessage();
     emit errorSignal(tr("Midi Input Error"), tr("port error"));
     goto cleanup; };
-  inPorts = midiin->getPortCount();   /* Check inputs. */
+  try { inPorts = midiin->getPortCount(); }
+  catch (MidiBackendError &error) {
+    error.printMessage();
+    emit errorSignal(tr("Midi Input Error"), tr("enumeration error"));
+    this->midiInDevices.push_back(tr("no midi device available"));
+    goto cleanup;
+  };
   for ( unsigned int i=0; i<inPorts; i++ ) {
      try { portName = midiin->getPortName(i); }
      catch (MidiBackendError &error) {
