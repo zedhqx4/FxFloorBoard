@@ -43,7 +43,7 @@ public:
 	void sendSysxMsg(QString sysxOutMsg, int midiOutport, int midiInPort);
 	void sendMidi(QString midiMsg, int midiOutport);
 	void callbackMsg(QString rxData);
-	void reportMidiBackendError(QString errorMessage);
+	void reportMidiBackendError(QString windowTitle, QString errorMessage);
 	QList<QString> getMidiOutDevices();
 	QList<QString> getMidiInDevices();
 		

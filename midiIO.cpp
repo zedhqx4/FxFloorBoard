@@ -44,8 +44,8 @@ static void midiBackendErrorCallback(rt::midi::RtMidiError::Type type, const std
 {
     Q_UNUSED(type);
     midiIO *owner = static_cast<midiIO *>(userData);
-    if (owner)
-        owner->reportMidiBackendError(QString::fromStdString(errorText));
+    if (owner && type != rt::midi::RtMidiError::DEBUG_WARNING)
+        owner->reportMidiBackendError(tr("MIDI Backend Error"), QString::fromStdString(errorText));
 }
 #endif
 
@@ -118,12 +118,12 @@ void midiIO::queryMidiOutDevices()
   try { midiout = createMidiOut(clientName, this); }   /* MidiBackendOut constructor */
   catch (MidiBackendError &error) {
     error.printMessage();
-    emit errorSignal(tr("Midi Output Error"), tr("port error"));
+    reportMidiBackendError(tr("Midi Output Error"), tr("port error"));
     goto cleanup; };
   try { outPorts = midiout->getPortCount(); }
   catch (MidiBackendError &error) {
     error.printMessage();
-    emit errorSignal(tr("Midi Output Error"), tr("enumeration error"));
+    reportMidiBackendError(tr("Midi Output Error"), tr("enumeration error"));
     this->midiOutDevices.push_back(tr("no midi device available"));
     goto cleanup;
   };
@@ -133,7 +133,7 @@ void midiIO::queryMidiOutDevices()
         }
     catch (MidiBackendError &error) {
       error.printMessage();
-      emit errorSignal(tr("Midi Output Error"), tr("data error"));
+      reportMidiBackendError(tr("Midi Output Error"), tr("data error"));
       goto cleanup; };
 #ifdef Q_OS_WIN
         /* if we are running msdos based windows, use device numbers instead, UNICODE not supported*/
@@ -175,12 +175,12 @@ void midiIO::queryMidiInDevices()
   try { midiin = createMidiIn(clientName, this); }    /* MidiBackendIn constructor */
   catch (MidiBackendError &error) {
     error.printMessage();
-    emit errorSignal(tr("Midi Input Error"), tr("port error"));
+    reportMidiBackendError(tr("Midi Input Error"), tr("port error"));
     goto cleanup; };
   try { inPorts = midiin->getPortCount(); }
   catch (MidiBackendError &error) {
     error.printMessage();
-    emit errorSignal(tr("Midi Input Error"), tr("enumeration error"));
+    reportMidiBackendError(tr("Midi Input Error"), tr("enumeration error"));
     this->midiInDevices.push_back(tr("no midi device available"));
     goto cleanup;
   };
@@ -188,7 +188,7 @@ void midiIO::queryMidiInDevices()
      try { portName = midiin->getPortName(i); }
      catch (MidiBackendError &error) {
         error.printMessage();
-        emit errorSignal(tr("Midi Input Error"), tr("data error"));
+        reportMidiBackendError(tr("Midi Input Error"), tr("data error"));
         goto cleanup; };
 #ifdef Q_OS_WIN
   if(QSysInfo::WindowsVersion <= QSysInfo::WV_Me)
@@ -231,12 +231,12 @@ void midiIO::sendSyxMsg(QString sysxOutMsg, int midiOutPort)
         midiMsgOut = createMidiOut(clientName, this);
         if (midiMsgOut->getPortCount() < 1)
         {
-            emit errorSignal(tr("Syx Output Error"), tr("no MIDI output device available"));
+            reportMidiBackendError(tr("Syx Output Error"), tr("no MIDI output device available"));
             goto cleanup;
         }
         if ((sysxOutMsg.size() % 2) != 0)
         {
-            emit errorSignal(tr("Syx Output Error"), tr("invalid hexadecimal message length"));
+            reportMidiBackendError(tr("Syx Output Error"), tr("invalid hexadecimal message length"));
             goto cleanup;
         }
         midiMsgOut->openPort(static_cast<unsigned int>(midiOutPort), clientName);
@@ -252,12 +252,12 @@ void midiIO::sendSyxMsg(QString sysxOutMsg, int midiOutPort)
             const unsigned int value = sysxOutMsg.mid(i * 2, 2).toUInt(&ok, 16);
             if (!ok || value > 0xFF)
             {
-                emit errorSignal(tr("Syx Output Error"), tr("invalid hexadecimal byte in SysEx message"));
+                reportMidiBackendError(tr("Syx Output Error"), tr("invalid hexadecimal byte in SysEx message"));
                 goto cleanup;
             }
             if (message.empty() && value != 0xF0)
             {
-                emit errorSignal(tr("Syx Output Error"), tr("SysEx frame does not start with F0"));
+                reportMidiBackendError(tr("Syx Output Error"), tr("SysEx frame does not start with F0"));
                 goto cleanup;
             }
             message.push_back(static_cast<unsigned char>(value));
@@ -272,12 +272,12 @@ void midiIO::sendSyxMsg(QString sysxOutMsg, int midiOutPort)
             }
         }
         if (!message.empty())
-            emit errorSignal(tr("Syx Output Error"), tr("unterminated SysEx frame (missing F7)"));
+            reportMidiBackendError(tr("Syx Output Error"), tr("unterminated SysEx frame (missing F7)"));
     }
     catch (MidiBackendError &error)
     {
         error.printMessage();
-        emit errorSignal(tr("Syx Output Error"), QString::fromStdString(error.getMessage()));
+        reportMidiBackendError(tr("Syx Output Error"), QString::fromStdString(error.getMessage()));
     }
 cleanup:
     if (midiMsgOut)
@@ -285,7 +285,7 @@ cleanup:
         if (portOpened)
         {
             try { midiMsgOut->closePort(); }
-            catch (MidiBackendError &error) { error.printMessage(); }
+            catch (MidiBackendError &error) { error.printMessage(); reportMidiBackendError(tr("MIDI Output Error"), QString::fromStdString(error.getMessage())); }
         }
         delete midiMsgOut;
     }
@@ -301,12 +301,12 @@ void midiIO::sendMidiMsg(QString sysxOutMsg, int midiOutPort)
         midiMsgOut = createMidiOut(clientName, this);
         if (midiMsgOut->getPortCount() < 1)
         {
-            emit errorSignal(tr("Midi Output Error"), tr("no MIDI output device available"));
+            reportMidiBackendError(tr("Midi Output Error"), tr("no MIDI output device available"));
             goto cleanup;
         }
         if ((sysxOutMsg.size() % 2) != 0)
         {
-            emit errorSignal(tr("Midi Output Error"), tr("invalid hexadecimal message length"));
+            reportMidiBackendError(tr("Midi Output Error"), tr("invalid hexadecimal message length"));
             goto cleanup;
         }
         midiMsgOut->openPort(static_cast<unsigned int>(midiOutPort), clientName);
@@ -319,7 +319,7 @@ void midiIO::sendMidiMsg(QString sysxOutMsg, int midiOutPort)
             const unsigned int value = sysxOutMsg.mid(i, 2).toUInt(&ok, 16);
             if (!ok || value > 0xFF)
             {
-                emit errorSignal(tr("Midi Output Error"), tr("invalid hexadecimal byte in MIDI message"));
+                reportMidiBackendError(tr("Midi Output Error"), tr("invalid hexadecimal byte in MIDI message"));
                 goto cleanup;
             }
             message.push_back(static_cast<unsigned char>(value));
@@ -330,7 +330,7 @@ void midiIO::sendMidiMsg(QString sysxOutMsg, int midiOutPort)
     catch (MidiBackendError &error)
     {
         error.printMessage();
-        emit errorSignal(tr("Midi Output Error"), QString::fromStdString(error.getMessage()));
+        reportMidiBackendError(tr("Midi Output Error"), QString::fromStdString(error.getMessage()));
     }
 cleanup:
     if (midiMsgOut)
@@ -366,12 +366,12 @@ void midicallback(double deltatime, std::vector<unsigned char> *message, void *u
     midi->callbackMsg(rxData);
 };
 
-void midiIO::reportMidiBackendError(QString errorMessage)
+void midiIO::reportMidiBackendError(QString windowTitle, QString errorMessage)
 {
 #ifdef Q_OS_LINUX
     this->midiBackendErrorOccurred.store(true);
 #endif
-    emit errorSignal(tr("MIDI Backend Error"), errorMessage);
+    emit errorSignal(windowTitle, errorMessage);
 };
 
 void midiIO::callbackMsg(QString rxData)
@@ -424,7 +424,11 @@ void midiIO::receiveMsg(int midiInPort)
     try
     {
         midiin = createMidiIn(clientName, this);
-        if (midiin->getPortCount() < 1) goto cleanup;
+        if (midiin->getPortCount() < 1)
+        {
+            reportMidiBackendError(tr("Midi Input Error"), tr("no MIDI input device available"));
+            goto cleanup;
+        }
 #ifdef Q_OS_LINUX
         // GT-10 patch and system replies exceed RtMidi's 1 KiB default input buffer.
         // Set the ALSA decoder buffer before opening the input port.
@@ -461,7 +465,7 @@ void midiIO::receiveMsg(int midiInPort)
     catch (MidiBackendError &error)
     {
         error.printMessage();
-        emit errorSignal(tr("Midi Input Error"), QString::fromStdString(error.getMessage()));
+        reportMidiBackendError(tr("Midi Input Error"), QString::fromStdString(error.getMessage()));
     }
 cleanup:
     emit setStatusProgress(100);
@@ -473,7 +477,7 @@ cleanup:
             catch (MidiBackendError &error)
             {
                 error.printMessage();
-                emit errorSignal(tr("Midi Input Error"), tr("could not cancel MIDI callback cleanly"));
+                reportMidiBackendError(tr("Midi Input Error"), tr("could not cancel MIDI callback cleanly"));
             }
         }
         if (portOpened)
@@ -482,7 +486,7 @@ cleanup:
             catch (MidiBackendError &error)
             {
                 error.printMessage();
-                emit errorSignal(tr("Midi Input Error"), tr("could not close MIDI input port cleanly"));
+                reportMidiBackendError(tr("Midi Input Error"), tr("could not close MIDI input port cleanly"));
             }
         }
     }
