@@ -20,6 +20,8 @@ This log records the transport/build work on the GT-10 branch. The reference bra
 - `3e5c4f3` — Validate outgoing hex bytes and SysEx `F0...F7` framing; remove the leaked temporary `new[]` byte buffers and guard output-port construction/open/close errors.
 - `7871852` — Clear MIDI input/output device lists before each enumeration to prevent duplicate entries after refresh.
 - `63936f8` — Match GT-10 ports using both the legacy flat name and RtMidi ALSA's `client:port clientId:portId` name format.
+- `5fa57bc` — Schedule each `midiIO` worker for deletion only after the real `QThread::finished()` signal; also release workers that cannot start because no output port is configured.
+- `7432063` — Replace the two remaining `QString::toAscii()` uses in MIDI preference conversion with `toLatin1()`.
 
 ## Validation status
 
