@@ -21,6 +21,11 @@
 **
 ****************************************************************************/
 
+#include <QtGlobal>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <QtWidgets>
+#endif
+
 #include "Preferences.h"
 #include "PreferencesDestroyer.h"
 #include <QList>
