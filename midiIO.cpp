@@ -340,6 +340,18 @@ void midicallback(double deltatime, std::vector<unsigned char> *message, void *u
 
 void midiIO::callbackMsg(QString rxData)
 {
+    // Accept only the reply family that matches this request. This prevents
+    // unrelated MIDI SysEx traffic from satisfying the byte-count wait.
+    if (msgType == "identity")
+    {
+        if (rxData != idReplyPatern)
+            return;
+    }
+    else if (!rxData.startsWith("F0410000002F12"))
+    {
+        return;
+    }
+
     QMutexLocker locker(&sysxBufferMutex);
     sysxBuffer.append(rxData);
 };
@@ -496,6 +508,12 @@ void midiIO::run()
             int receivedBytes = 0;
             { QMutexLocker locker(&sysxBufferMutex); receivedBytes = this->sysxBuffer.size() / 2; }
             if((receivedBytes != count) && (repeat<3) && preferences->getPreferences("Midi", "DBug", "bool")!="true")
+      if (count > 0 && receivedBytes != count)
+      {
+        // Never forward a partial or unrelated response to the patch parser.
+        this->sysxInMsg.clear();
+        emit errorSignal(tr("Midi Input Error"), tr("incomplete GT-10 SysEx response"));
+      }
 
       {
         emit setStatusdBugMessage(tr("re-trying data request"));
