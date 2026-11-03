@@ -88,6 +88,45 @@ static QString gt10SysxPayload(const QString &messages, bool validateChecksums)
 }
 
 
+// Patch replies use a compact bulk frame. Reuse the exact payload slices
+// used by bankTreeList::updatePatch(), rather than treating the bulk reply
+// as one ordinary DT1 frame with a checksum byte.
+static QString gt10PatchReplyPayload(const QString &message)
+{
+    if (message.size() != patchReplySize * 2 ||
+        !message.startsWith("F0410000002F12") ||
+        !message.endsWith("F7"))
+        return QString();
+
+    static const int segments[][2] = {
+        {22, 256}, {278, 228}, {532, 28}, {560, 256},
+        {816, 200}, {1042, 56}, {1098, 256}, {1354, 172},
+        {1552, 256}, {1808, 228}, {2062, 28}, {2090, 256},
+        {2346, 200}, {2572, 256}, {2828, 226}, {3080, 30},
+        {3110, 256}
+    };
+
+    QString payload;
+    for (unsigned int i = 0; i < sizeof(segments) / sizeof(segments[0]); ++i)
+    {
+        const int offset = segments[i][0];
+        const int length = segments[i][1];
+        if (length <= 0 || (length % 2) != 0 || offset < 0 ||
+            offset + length > message.size() - 2)
+            return QString();
+
+        for (int pos = offset; pos < offset + length; pos += 2)
+        {
+            bool ok = false;
+            const int value = message.mid(pos, 2).toInt(&ok, 16);
+            if (!ok || value < 0 || value > 0x7F)
+                return QString();
+        }
+        payload.append(message.mid(offset, length));
+    }
+    return payload;
+}
+
 // A GT-10 patch-name reply is a Roland DT1 SysEx frame containing
 // 16 name bytes. Verify the model header, framing and checksum before
 // treating the payload as a patch name.
@@ -623,8 +662,9 @@ void SysxIO::resetDevice(QString replyMsg)
 void SysxIO::verifyPatchBufferReply(QString replyMsg)
 {
     QObject::disconnect(this, SIGNAL(sysxReply(QString)), this, SLOT(verifyPatchBufferReply(QString)));
-    const QString actualPayload = gt10SysxPayload(replyMsg, true);
-    const bool verified = !this->pendingBufferExpectedData.isEmpty() &&
+    const QString actualPayload = gt10PatchReplyPayload(replyMsg);
+    const bool verified = noError() &&
+                          !this->pendingBufferExpectedData.isEmpty() &&
                           !actualPayload.isEmpty() &&
                           actualPayload == this->pendingBufferExpectedData;
     if (verified)
