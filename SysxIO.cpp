@@ -1356,6 +1356,19 @@ void SysxIO::sendPatchWriteAndVerify(QString sysxMsg, int bank, int patch)
 {
     setDeviceReady(false);
     setNoError(true);
+    this->verifyPermanentPatchReadback = false;
+    this->pendingPermanentPatchExpectedData.clear();
+    const QString readbackRequest = MidiTable::Instance()->patchRequest(bank, patch);
+    const QString writeAddress = sysxMsg.mid(sysxAddressOffset * 2, 8);
+    const QString readAddress = readbackRequest.mid(sysxAddressOffset * 2, 8);
+    if (writeAddress.size() != 8 || readAddress.size() != 8 || writeAddress != readAddress)
+    {
+        setSyncStatus(false);
+        setDeviceReady(true);
+        emit errorSignal(tr("Permanent Patch Verification"), tr("write target does not match the requested bank/patch readback address"));
+        emit patchMemoryWriteVerified(false);
+        return;
+    }
     this->pendingPermanentPatchExpectedData = gt10SysxPayload(sysxMsg, false);
     if (this->pendingPermanentPatchExpectedData.isEmpty())
     {
