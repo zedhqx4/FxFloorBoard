@@ -196,101 +196,125 @@ QList<QString> midiIO::getMidiInDevices()
 void midiIO::sendSyxMsg(QString sysxOutMsg, int midiOutPort)
 {
     MidiBackendOut *midiMsgOut = 0;
-          const std::string clientName = "FxFloorBoard";
-    midiMsgOut = createMidiOut(clientName);
-    QString hex;
-    int wait = 0;
-    int close = 20;
-    int s = sysxOutMsg.size()/100;
-    int p=0;
-    int retryCount = 0;
-    std::vector<unsigned char> message;
-                message.reserve(256);
-                int msgLength = 0;
-                msgLength = sysxOutMsg.length()/2;
-                char *ptr  = new char[msgLength];		// Convert QString to char* (hex value)
-    int nPorts = midiMsgOut->getPortCount();   // Check available ports.
-    if ( nPorts < 1 ) { goto cleanup; };
-RETRY:
-    try {
-        midiMsgOut->openPort(midiOutPort, clientName);	// Open selected port.
-                      for(int i=0;i<msgLength*2;++i)
-                       {
-            unsigned int n;
-                        hex = sysxOutMsg.mid(i, 2);
-                        bool ok;
-                        n = hex.toInt(&ok, 16);
-                              *ptr = (char)n;
-                        message.push_back(*ptr);		// insert the char* string into a std::vector
-            wait = wait + 1;
-            p=p+s;
-            emit setStatusProgress(wait);
-                              if(hex == "F7")
-             {
-                midiMsgOut->sendMessage(&message);  // send the midi data as a std::vector
-                SLEEP(wait/8);
-                message.clear();
-                close = wait;
-                wait = 0;
-             };
-            ptr++; i++;
-
-      };
+    bool portOpened = false;
+    const std::string clientName = "FxFloorBoard";
+    try
+    {
+        midiMsgOut = createMidiOut(clientName);
+        if (midiMsgOut->getPortCount() < 1)
+        {
+            emit errorSignal(tr("Syx Output Error"), tr("no MIDI output device available"));
             goto cleanup;
+        }
+        if ((sysxOutMsg.size() % 2) != 0)
+        {
+            emit errorSignal(tr("Syx Output Error"), tr("invalid hexadecimal message length"));
+            goto cleanup;
+        }
+        midiMsgOut->openPort(static_cast<unsigned int>(midiOutPort), clientName);
+        portOpened = true;
+
+        std::vector<unsigned char> message;
+        message.reserve(256);
+        int bytesSinceLastFrame = 0;
+        const int totalBytes = sysxOutMsg.size() / 2;
+        for (int i = 0; i < totalBytes; ++i)
+        {
+            bool ok = false;
+            const unsigned int value = sysxOutMsg.mid(i * 2, 2).toUInt(&ok, 16);
+            if (!ok || value > 0xFF)
+            {
+                emit errorSignal(tr("Syx Output Error"), tr("invalid hexadecimal byte in SysEx message"));
+                goto cleanup;
             }
- catch (MidiBackendError &error)
-   {
-    SLEEP(100);
-    retryCount = retryCount + 1;
-    if (retryCount < 10) { goto RETRY; };
-          error.printMessage();
-          emit errorSignal(tr("Syx Output Error"), tr("data error"));
-          goto cleanup;
-    };
-   /* Clean up */
- cleanup:
-        SLEEP(close);						// wait as long as the message is sending.
-        midiMsgOut->closePort();
-    delete midiMsgOut;
+            if (message.empty() && value != 0xF0)
+            {
+                emit errorSignal(tr("Syx Output Error"), tr("SysEx frame does not start with F0"));
+                goto cleanup;
+            }
+            message.push_back(static_cast<unsigned char>(value));
+            ++bytesSinceLastFrame;
+            emit setStatusProgress((i + 1) * 100 / (totalBytes > 0 ? totalBytes : 1));
+            if (value == 0xF7)
+            {
+                midiMsgOut->sendMessage(&message);
+                SLEEP(bytesSinceLastFrame / 8);
+                message.clear();
+                bytesSinceLastFrame = 0;
+            }
+        }
+        if (!message.empty())
+            emit errorSignal(tr("Syx Output Error"), tr("unterminated SysEx frame (missing F7)"));
+    }
+    catch (MidiBackendError &error)
+    {
+        error.printMessage();
+        emit errorSignal(tr("Syx Output Error"), QString::fromStdString(error.getMessage()));
+    }
+cleanup:
+    if (midiMsgOut)
+    {
+        if (portOpened)
+        {
+            try { midiMsgOut->closePort(); }
+            catch (MidiBackendError &error) { error.printMessage(); }
+        }
+        delete midiMsgOut;
+    }
 };
 /*********** send midi messages *******************************/
 void midiIO::sendMidiMsg(QString sysxOutMsg, int midiOutPort)
 {
     MidiBackendOut *midiMsgOut = 0;
+    bool portOpened = false;
     const std::string clientName = "FxFloorBoard";
-                midiMsgOut = createMidiOut(clientName);
-    unsigned int nPorts = midiMsgOut->getPortCount();   // Check available ports.
-    if ( nPorts < 1 ){ goto cleanup; }
-    try {
-    midiMsgOut->openPort(midiOutPort, clientName);	// Open selected port.
-                std::vector<unsigned char> message;
-                int msgLength = sysxOutMsg.length()/2;
-                char *ptr  = new char[msgLength];		// Convert QString to char* (hex value)
-                for(int i=0;i<msgLength*2;++i)
-        {unsigned int n;
-                        QString hex;
-                        hex.append(sysxOutMsg.mid(i, 2));
-                        bool ok;
-                        n = hex.toInt(&ok, 16);
-                        *ptr = (char)n;
-                        message.push_back(*ptr);		// insert the char* string into a std::vector
-            ptr++; i++;
-        };
-      midiMsgOut->sendMessage(&message);  // send the midi data as a std::vector
-        goto cleanup;
+    try
+    {
+        midiMsgOut = createMidiOut(clientName);
+        if (midiMsgOut->getPortCount() < 1)
+        {
+            emit errorSignal(tr("Midi Output Error"), tr("no MIDI output device available"));
+            goto cleanup;
+        }
+        if ((sysxOutMsg.size() % 2) != 0)
+        {
+            emit errorSignal(tr("Midi Output Error"), tr("invalid hexadecimal message length"));
+            goto cleanup;
+        }
+        midiMsgOut->openPort(static_cast<unsigned int>(midiOutPort), clientName);
+        portOpened = true;
+        std::vector<unsigned char> message;
+        message.reserve(static_cast<size_t>(sysxOutMsg.size() / 2));
+        for (int i = 0; i < sysxOutMsg.size(); i += 2)
+        {
+            bool ok = false;
+            const unsigned int value = sysxOutMsg.mid(i, 2).toUInt(&ok, 16);
+            if (!ok || value > 0xFF)
+            {
+                emit errorSignal(tr("Midi Output Error"), tr("invalid hexadecimal byte in MIDI message"));
+                goto cleanup;
             }
- catch (MidiBackendError &error)
-   {
-          error.printMessage();
-          emit errorSignal(tr("Midi Output Error"), tr("data error"));
-          goto cleanup;
-    };
-   /* Clean up*/
- cleanup:
-        midiMsgOut->closePort();
-    delete midiMsgOut;
+            message.push_back(static_cast<unsigned char>(value));
+        }
+        if (!message.empty())
+            midiMsgOut->sendMessage(&message);
+    }
+    catch (MidiBackendError &error)
+    {
+        error.printMessage();
+        emit errorSignal(tr("Midi Output Error"), QString::fromStdString(error.getMessage()));
+    }
+cleanup:
+    if (midiMsgOut)
+    {
+        if (portOpened)
+        {
+            try { midiMsgOut->closePort(); }
+            catch (MidiBackendError &error) { error.printMessage(); }
+        }
+        delete midiMsgOut;
+    }
 };
-
 /*********************** receiveMsg() **********************************
  * Prepares the sysx message after receiving on the MIDI In device. It
  *  and opens, receives and closes the MIDI device then converts the
