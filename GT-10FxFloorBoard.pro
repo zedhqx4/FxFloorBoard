@@ -51,7 +51,7 @@ DEPENDPATH += .
 QT += xml
 
 # Qt 5 moved widget classes from QtGui into the QtWidgets module.
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 #Platform dependent file(s)
 win32 {
