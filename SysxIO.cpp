@@ -1175,7 +1175,8 @@ void SysxIO::systemDataRequest()
 	       	setDeviceReady(false); // Reserve the device for interaction.
 		      QObject::disconnect(this, SIGNAL(sysxReply(QString)));
 		      QObject::connect(this, SIGNAL(sysxReply(QString)), this, SLOT(systemReply(QString)));
-		      sendSysx(systemRequest); // GT-10 System area data Request.    
+		      setNoError(true); // A fresh read must not inherit a previous transfer failure.
+              sendSysx(systemRequest); // GT-10 System area data Request.    
           
           emit setStatusProgress(0);
          }
