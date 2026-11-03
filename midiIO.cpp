@@ -467,8 +467,24 @@ cleanup:
     emit setStatusProgress(100);
     if (midiin)
     {
-        if (callbackInstalled) midiin->cancelCallback();
-        if (portOpened) midiin->closePort();
+        if (callbackInstalled)
+        {
+            try { midiin->cancelCallback(); }
+            catch (MidiBackendError &error)
+            {
+                error.printMessage();
+                emit errorSignal(tr("Midi Input Error"), tr("could not cancel MIDI callback cleanly"));
+            }
+        }
+        if (portOpened)
+        {
+            try { midiin->closePort(); }
+            catch (MidiBackendError &error)
+            {
+                error.printMessage();
+                emit errorSignal(tr("Midi Input Error"), tr("could not close MIDI input port cleanly"));
+            }
+        }
     }
     {
         QMutexLocker locker(&sysxBufferMutex);
