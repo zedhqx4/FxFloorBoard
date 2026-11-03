@@ -48,7 +48,7 @@ mainWindow::mainWindow()
 #ifdef Q_OS_WIN
         /* This set the floorboard default style to the "plastique" style,
            as it comes the nearest what the stylesheet uses. */
-        //fxsBoard->setStyle(QStyleFactory::create("plastique"));
+        //fxsBoard->setStyle(QStyleFactory::create("Fusion"));
                 if(QFile(":qss/windows.qss").exists())
                 {
                         QFile file(":qss/windows.qss");
@@ -58,7 +58,7 @@ mainWindow::mainWindow()
                 };
 #endif
 
-#ifdef Q_WS_X11
+#ifdef Q_OS_LINUX
         fxsBoard->setStyle(QStyleFactory::create("plastique"));
                 if(QFile(":qss/linux.qss").exists())
                 {
