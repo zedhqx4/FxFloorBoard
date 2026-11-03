@@ -26,11 +26,13 @@ This log records the transport/build work on the GT-10 branch. The reference bra
 - `aed89bf` — Set the Linux ALSA input decoder buffer to 4096 bytes before opening the port, sized for the GT-10 patch/system reply payloads.
 - `8265790` — After the allowed retries, discard incomplete replies instead of forwarding partial data to the SysEx parser.
 - `cbaf127` — Remove the fragile global QtWidgets preinclude and add the remaining explicit Qt 5 widget headers to `customLabelDisplay.h` and `customKnobRange.h`.
+- `eb2c202` — Add the explicit Qt 5 widgets include to `customRenameDialog.h`, the final missing dialog header found after removing the global preinclude.
+- `fba964c` — Validate patch-name replies as 29-byte GT-10 Roland DT1 frames with the expected model header, `F7` terminator and correct checksum before decoding the name.
 
 ## Validation status
 
 - qmake configuration for the Linux Qt 5 CI job has succeeded in the observed runs.
 - Earlier build runs reached the Qt compatibility errors listed above; those were corrected incrementally.
-- qmake configuration succeeds for the current branch. The latest CI run for `cbaf127` is compiling with the global preinclude removed; its result must be checked before marking the Linux build as passing.
+- qmake configuration succeeds for the current branch. The latest CI run for `fba964c` is compiling after the explicit Qt 5 dialog header and patch-name validation changes; its result must be checked before marking the Linux build as passing.
 - No physical GT-10 read/write test has been performed by CI. Device-level validation remains required, starting with identity and read-only patch/name requests.
 - No patch write test should be treated as validated until the written test patch is read back from the GT-10 and compared.
