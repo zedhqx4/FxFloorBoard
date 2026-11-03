@@ -1278,29 +1278,6 @@ void floorBoardDisplay::patchChangeFailed()
         setPatchNumDisplay(sysxIO->getLoadedBank(), sysxIO->getLoadedPatch());
 }
 
-void floorBoardDisplay::resetDevice(QString replyMsg)
-{
-    Q_UNUSED(replyMsg);
-    SysxIO *sysxIO = SysxIO::Instance();
-    QObject::disconnect(sysxIO, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString)));
-
-    if (sysxIO->getBank() != sysxIO->getLoadedBank() ||
-        sysxIO->getPatch() != sysxIO->getLoadedPatch())
-    {
-        sysxIO->setLoadedBank(sysxIO->getBank());
-        sysxIO->setLoadedPatch(sysxIO->getPatch());
-    }
-
-    if (sysxIO->noError())
-        emit setStatusMessage(tr("Write sent; readback required to verify the patch."));
-    else
-        emit setStatusMessage(tr("Patch write failed; patch remains unverified."));
-
-    emit setStatusProgress(0);
-    sysxIO->setDeviceReady(true);
-    emit connectedSignal();
-};
-
 void floorBoardDisplay::patchSelectSignal(int bank, int patch)
 {
         SysxIO *sysxIO = SysxIO::Instance();

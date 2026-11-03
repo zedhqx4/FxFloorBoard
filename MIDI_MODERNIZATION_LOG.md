@@ -49,3 +49,7 @@ This log records the transport/build work on the GT-10 branch. The reference bra
 
 - `99ccf58` — Verify permanent user-patch writes by requesting the exact bank/patch again, comparing the compact bulk-reply payload, and emitting a completion signal only after the comparison.
 - `f7e9bcc` — Keep temporary-buffer write UI state pending until the temporary-buffer readback completes.
+
+- `f7e9bcc` — Make the temporary-buffer UI wait for the explicit readback result signal; remove its early “write done” visual state.
+- `e711bc6` — Require patch readback frames to match the exact requested Roland address, in addition to model/header checks.
+- `TODO` — Remove the unused display-level send-completion reset slot; readback-specific signals own UI completion now.

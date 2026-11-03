@@ -70,7 +70,6 @@ public slots:
         void writeSignal(bool value);
         void connectionResult(QString);
         void autoConnectionResult(QString);
-        void resetDevice(QString replyMsg);
         void patchMemoryWriteVerified(bool verified);
         void patchBufferWriteVerified(bool verified);
         void patchSelectSignal(int bank, int patch);
