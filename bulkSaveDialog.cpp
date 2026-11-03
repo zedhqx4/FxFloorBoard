@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -21,7 +21,12 @@
 **
 ****************************************************************************/
 
+#include <QtGui>
+
+// Qt 5 moved widget classes from QtGui into the QtWidgets module.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QtWidgets>
+#endif
 #include <QFile>
 #include <QDataStream>
 #include <QByteArray>
@@ -383,7 +388,7 @@ void bulkSaveDialog::writeGXG()         // ************************************ 
 		QByteArray bulkFile;
 		QByteArray GXG_default;
 		QByteArray temp;
-		QFile GXGfile(":default.gxg");           // Read the default GT-10 GXG file .
+		QFile GXGfile(":default.gxg");           // Read the default GT-10B GXG file .
     if (GXGfile.open(QIODevice::ReadOnly))
 	  {	GXG_default = GXGfile.readAll(); };
 	  bulkFile.append(GXG_default.mid(0, 160));
@@ -508,7 +513,7 @@ void bulkSaveDialog::writeSMF()    // **************************** SMF FILE FORM
 		    ++x;
 		};
 		QByteArray bulkFile;
-		QByteArray temp;                        // TRANSLATION of GT-10 PATCHES, data read from gt10B syx patch **************
+		QByteArray temp;                        // TRANSLATION of GT-10B PATCHES, data read from gt10B syx patch **************
 	  QByteArray Qhex;                        // and used to replace gt10B patch SMF data*********************************
     QFile hexfile(":HexLookupTable.hex");   // use a QByteArray of hex numbers from a lookup table.
     if (hexfile.open(QIODevice::ReadOnly))

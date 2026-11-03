@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -21,6 +21,11 @@
 **
 ****************************************************************************/
 
+#include <QtGlobal>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <QtWidgets>
+#endif
+
 #include <QApplication>
 #include <QMessageBox>
 #include "SysxIO.h"
@@ -30,6 +35,139 @@
 #include "sysxWriter.h"
 #include "MidiTable.h"
 #include "globalVariables.h"
+
+// Extract the data bytes from concatenated GT-10 DT1 frames.
+// Text-display frames (command 0x1B) are excluded because sendSysxMsg() excludes them.
+static QString gt10SysxPayload(const QString &messages, bool validateChecksums)
+{
+    if (messages.isEmpty() || (messages.size() % 2) != 0)
+        return QString();
+
+    const QString dataHeader = "F0410000002F12";
+    const QString textHeader = "F0410000001B12";
+    QString payload;
+    bool foundDataFrame = false;
+    int cursor = 0;
+    while (cursor < messages.size())
+    {
+        const QString header = messages.mid(cursor, 14);
+        if (header != dataHeader && header != textHeader)
+            return QString();
+
+        const int frameEnd = messages.indexOf("F7", cursor + 14);
+        if (frameEnd < 0 || ((frameEnd - cursor + 2) % 2) != 0)
+            return QString();
+
+        const int checksumTextOffset = frameEnd - 2;
+        const int dataTextOffset = cursor + (sysxDataOffset * 2);
+        if (checksumTextOffset < dataTextOffset)
+            return QString();
+
+        int dataSum = 0;
+        for (int offset = cursor + (checksumOffset * 2); offset < checksumTextOffset; offset += 2)
+        {
+            bool ok = false;
+            const int value = messages.mid(offset, 2).toInt(&ok, 16);
+            if (!ok || value < 0 || value > 0x7F)
+                return QString();
+            dataSum += value;
+        }
+
+        if (validateChecksums && header == dataHeader &&
+            messages.mid(checksumTextOffset, 2) != MidiTable::Instance()->getCheckSum(dataSum))
+            return QString();
+
+        if (header == dataHeader)
+        {
+            foundDataFrame = true;
+            payload.append(messages.mid(dataTextOffset, checksumTextOffset - dataTextOffset));
+        }
+        cursor = frameEnd + 2;
+    }
+    return foundDataFrame ? payload : QString();
+}
+
+
+// Patch replies use a compact bulk frame. Reuse the exact payload slices
+// used by bankTreeList::updatePatch(), rather than treating the bulk reply
+// as one ordinary DT1 frame with a checksum byte.
+static QString gt10PatchReplyPayload(const QString &message)
+{
+    if (message.size() != patchReplySize * 2 ||
+        !message.startsWith("F0410000002F12") ||
+        !message.endsWith("F7"))
+        return QString();
+
+    static const int segments[][2] = {
+        {22, 256}, {278, 228}, {532, 28}, {560, 256},
+        {816, 200}, {1042, 56}, {1098, 256}, {1354, 172},
+        {1552, 256}, {1808, 228}, {2062, 28}, {2090, 256},
+        {2346, 200}, {2572, 256}, {2828, 226}, {3080, 30},
+        {3110, 256}
+    };
+
+    QString payload;
+    for (unsigned int i = 0; i < sizeof(segments) / sizeof(segments[0]); ++i)
+    {
+        const int offset = segments[i][0];
+        const int length = segments[i][1];
+        if (length <= 0 || (length % 2) != 0 || offset < 0 ||
+            offset + length > message.size() - 2)
+            return QString();
+
+        for (int pos = offset; pos < offset + length; pos += 2)
+        {
+            bool ok = false;
+            const int value = message.mid(pos, 2).toInt(&ok, 16);
+            if (!ok || value < 0 || value > 0x7F)
+                return QString();
+        }
+        payload.append(message.mid(offset, length));
+    }
+    return payload;
+}
+
+// A GT-10 patch-name reply is a Roland DT1 SysEx frame containing
+// 16 name bytes. Verify the model header, framing and checksum before
+// treating the payload as a patch name.
+static bool isValidPatchNameReply(const QString &message)
+{
+    if (message.size() != nameReplySize * 2 ||
+        !message.startsWith("F0410000002F12") ||
+        !message.endsWith("F7"))
+        return false;
+
+    int dataSum = 0;
+    for (int offset = checksumOffset * 2; offset < message.size() - 4; offset += 2)
+    {
+        bool ok = false;
+        const int value = message.mid(offset, 2).toInt(&ok, 16);
+        if (!ok || value < 0 || value > 0x7F)
+            return false;
+        dataSum += value;
+    }
+
+    const QString receivedChecksum = message.mid(message.size() - 4, 2);
+    return receivedChecksum == MidiTable::Instance()->getCheckSum(dataSum);
+}
+
+
+// RtMidi ALSA names ports as "client:port clientId:portId", unlike the
+// flat "BOSS GT-10" name returned by the legacy backend.
+static int findGt10Port(const QList<QString> &devices)
+{
+    for (int i = 0; i < devices.size(); ++i)
+    {
+        const QString name = devices.at(i).trimmed();
+        if (name.compare("BOSS GT-10", Qt::CaseInsensitive) == 0 ||
+            name.compare("GT-10", Qt::CaseInsensitive) == 0 ||
+            name.startsWith("BOSS GT-10:", Qt::CaseInsensitive) ||
+            name.startsWith("GT-10:", Qt::CaseInsensitive))
+            return i;
+    }
+    return -1;
+}
+
 
 // Platform-dependent sleep routines.
 #ifdef Q_OS_WIN
@@ -47,6 +185,11 @@ SysxIO::SysxIO()
 	this->setDevice(false);
 	this->setDeviceReady(true);
 	this->setSyncStatus(false);
+	this->verifyBufferReadback = false;
+	this->verifySystemReadback = false;
+	this->verifyPermanentPatchReadback = false;
+	this->pendingPermanentPatchBank = 0;
+	this->pendingPermanentPatch = 0;
 	this->setNoError(true);
 	this->setBank(0);
 	this->setPatch(0);
@@ -437,53 +580,157 @@ QList<QString> SysxIO::getSourceItems(QString area, QString hex1, QString hex2)
 
 int SysxIO::getSourceValue(QString area, QString hex1, QString hex2, QString hex3)
 {
-    MidiTable *midiTable = MidiTable::Instance();
-    bool ok;
-    int value;
-    if(area == "MidiT")
-    {
-        QList<QString> items = this->getSourceItems("System", hex1, hex2);
-        int maxRange = QString("7F").toInt(&ok, 16) + 1;
-        int listindex = sysxDataOffset + QString(hex3).toInt(&ok, 16);
-       int valueData1 = items.at(listindex).toInt(&ok, 16);
-        int valueData2 = items.at(listindex + 1).toInt(&ok, 16);
-        value = (valueData1 * maxRange) + valueData2;
-    }else{
-         if (area != "System")  {area = "Structure";};
-    QList<QString> items = this->getSourceItems(area, hex1, hex2);
-    if(midiTable->isData(area, hex1, hex2, hex3))
-    {
-        int maxRange = QString("7F").toInt(&ok, 16) + 1;
-        int listindex = sysxDataOffset + QString(hex3).toInt(&ok, 16);
-        int valueData1 = items.at(listindex).toInt(&ok, 16);
-        int valueData2 = items.at(listindex + 1).toInt(&ok, 16);
-        value = (valueData1 * maxRange) + valueData2;
-    }
-    else
-    {
-        value = items.at(sysxDataOffset + QString(hex3).toInt(&ok, 16)).toInt(&ok, 16);
-    };
-    };
-    return value;
+	MidiTable *midiTable = MidiTable::Instance();
+	bool ok;
+  if (area != "System")  {area = "Structure";};
+	/*if(hex1 != "00")
+	{
+		QString prevHex = QString::number((hex1.toInt(&ok, 16) - 1), 16).toUpper();
+		if(prevHex.length() < 2) prevHex.prepend("0");
+		if(midiTable->getMidiMap(area).id.contains(prevHex))
+		{
+			if(midiTable->getMidiMap(area, hex1).name == midiTable->getMidiMap(area, prevHex).name)
+			{
+				hex1 = prevHex;
+				hex3 = QString::number(hex3.toInt(&ok, 16) + QString("7F").toInt(&ok, 16) + 1, 16);
+			};
+		};
+	}; */
+
+	int value;
+	QList<QString> items = this->getSourceItems(area, hex1, hex2);
+	if(midiTable->isData(area, hex1, hex2, hex3))
+	{
+		int maxRange = QString("7F").toInt(&ok, 16) + 1;
+		int listindex = sysxDataOffset + QString(hex3).toInt(&ok, 16);
+		int valueData1 = items.at(listindex).toInt(&ok, 16);
+		int valueData2 = items.at(listindex + 1).toInt(&ok, 16);
+		value = (valueData1 * maxRange) + valueData2;
+	}
+	else
+	{
+		value = items.at(sysxDataOffset + QString(hex3).toInt(&ok, 16)).toInt(&ok, 16);
+	};
+	return value;
 };
 
 /************************ resetDevice() ******************************
 * Reset the device after sending a sysexmesage.
 * And starts to processes the spooler if the device is free.
 **********************************************************************/
-void SysxIO::resetDevice(QString replyMsg) 
+void SysxIO::resetDevice(QString replyMsg)
 {
-	if(this->sendSpooler.size() == 0)
-	{
-		QObject::disconnect(this, SIGNAL(sysxReply(QString)),	
-			this, SLOT(resetDevice(QString)));
+    Q_UNUSED(replyMsg);
+    if (!this->sendSpooler.isEmpty())
+    {
+        processSpooler();
+        return;
+    }
 
-		this->setDeviceReady(true);	// Free the device after finishing interaction.
-	}
-	else
-	{
-		processSpooler();
-	};
+    QObject::disconnect(this, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString)));
+    if (this->verifyBufferReadback)
+    {
+        this->verifyBufferReadback = false;
+        QObject::disconnect(this, SIGNAL(sysxReply(QString)), this, SLOT(verifyPatchBufferReply(QString)));
+        QObject::connect(this, SIGNAL(sysxReply(QString)), this, SLOT(verifyPatchBufferReply(QString)));
+        emit setStatusSymbol(3);
+        emit setStatusMessage(tr("Verify patch buffer"));
+        setNoError(true);
+        MidiTable *midiTable = MidiTable::Instance();
+        sendSysx(midiTable->patchRequest(0, 0)); // Read the temporary patch buffer at 0x60:00.
+        return;
+    }
+    if (this->verifyPermanentPatchReadback)
+    {
+        if (!isConnected())
+        {
+            this->verifyPermanentPatchReadback = false;
+            this->pendingPermanentPatchExpectedData.clear();
+            setSyncStatus(false);
+            setDeviceReady(true);
+            emit errorSignal(tr("Permanent Patch Verification"), tr("GT-10 disconnected before patch readback"));
+            emit patchMemoryWriteVerified(false);
+            return;
+        }
+        QObject::disconnect(this, SIGNAL(sysxReply(QString)), this, SLOT(verifyPatchBufferReply(QString)));
+        QObject::connect(this, SIGNAL(sysxReply(QString)), this, SLOT(verifyPatchBufferReply(QString)));
+        emit setStatusSymbol(3);
+        emit setStatusMessage(tr("Verify permanent patch"));
+        setNoError(true);
+        MidiTable *midiTable = MidiTable::Instance();
+        sendSysx(midiTable->patchRequest(this->pendingPermanentPatchBank, this->pendingPermanentPatch));
+        return;
+    }
+
+    if (this->verifySystemReadback)
+    {
+        if (!isConnected())
+        {
+            this->verifySystemReadback = false;
+            this->pendingSystemExpectedData.clear();
+            setSyncStatus(false);
+            setDeviceReady(true);
+            emit errorSignal(tr("System Write Verification"), tr("GT-10 disconnected before System readback"));
+            return;
+        }
+        setDeviceReady(true);
+        systemDataRequest(); // Read the System area back before reporting it synchronized.
+        return;
+    }
+
+    this->setDeviceReady(true);
+    emit setStatusSymbol(1);
+    emit setStatusProgress(0);
+    emit setStatusMessage(tr("Ready"));
+};
+
+
+void SysxIO::verifyPatchBufferReply(QString replyMsg)
+{
+    QObject::disconnect(this, SIGNAL(sysxReply(QString)), this, SLOT(verifyPatchBufferReply(QString)));
+    const bool verifyingPermanentPatch = this->verifyPermanentPatchReadback;
+    const QString expectedPayload = verifyingPermanentPatch ?
+        this->pendingPermanentPatchExpectedData : this->pendingBufferExpectedData;
+    const QString actualPayload = gt10PatchReplyPayload(replyMsg);
+    const bool verified = noError() && !expectedPayload.isEmpty() &&
+                          !actualPayload.isEmpty() && actualPayload == expectedPayload;
+    if (verified)
+    {
+        setSyncStatus(true);
+        if (verifyingPermanentPatch)
+        {
+            setLoadedBank(this->pendingPermanentPatchBank);
+            setLoadedPatch(this->pendingPermanentPatch);
+            emit setStatusdBugMessage(tr("GT-10 permanent patch readback verified"));
+        }
+        else
+        {
+            emit setStatusdBugMessage(tr("GT-10 temporary patch buffer readback verified"));
+        }
+    }
+    else
+    {
+        setSyncStatus(false);
+        emit errorSignal(verifyingPermanentPatch ? tr("Permanent Patch Verification") : tr("Patch Buffer Verification"),
+                         tr("GT-10 readback did not match the patch data sent"));
+    }
+
+    this->pendingBufferExpectedData.clear();
+    this->pendingPermanentPatchExpectedData.clear();
+    this->verifyPermanentPatchReadback = false;
+    setDeviceReady(true);
+    emit setStatusSymbol(1);
+    emit setStatusProgress(0);
+    if (verifyingPermanentPatch)
+    {
+        emit setStatusMessage(verified ? tr("Permanent patch verified") : tr("Permanent patch verification failed"));
+        emit patchMemoryWriteVerified(verified);
+    }
+    else
+    {
+        emit setStatusMessage(verified ? tr("Patch buffer verified") : tr("Patch buffer verification failed"));
+        emit patchBufferWriteVerified(verified);
+    }
 };
 
 /************************ processSpooler() ******************************
@@ -782,15 +1029,15 @@ void SysxIO::sendMidi(QString midiMsg)
 {
 	if(isConnected())
 	{
+		setNoError(true);
 		Preferences *preferences = Preferences::Instance(); bool ok;
 		int midiOutPort = preferences->getPreferences("Midi", "MidiOut", "device").toInt(&ok, 10);	// Get midi out device from preferences.
 		
 		midiIO *midi = new midiIO();
 		QList<QString> midiOutDevices = midi->getMidiOutDevices();
-	  if ( midiOutDevices.contains("BOSS GT-10") )
-    {
-      midiOutPort = midiOutDevices.indexOf("BOSS GT-10")+1;
-    }; 
+	  const int gt10OutPort = findGt10Port(midiOutDevices);
+        if (gt10OutPort >= 0)
+            midiOutPort = gt10OutPort; 
 
 		midi->sendMidi(midiMsg, midiOutPort);
 			 /*DeBugGING OUTPUT */
@@ -808,12 +1055,28 @@ void SysxIO::sendMidi(QString midiMsg)
 *************************************************************************************/
 void SysxIO::finishedSending()
 {
-	emit isFinished();
-	emit setStatusSymbol(1);
-	emit setStatusProgress(0);
-	emit setStatusMessage(tr("Ready"));
+    // Snapshot the completed operation before isFinished() can trigger another
+    // request and reset the error state or reserve the device again.
+    const bool operationSucceeded = noError();
+    const bool deviceIsReady = deviceReady();
 
-	//this->namePatchChange();
+    if (deviceIsReady)
+    {
+        emit setStatusProgress(0);
+        if (operationSucceeded)
+        {
+            emit setStatusSymbol(1);
+            emit setStatusMessage(tr("Ready"));
+        }
+        else
+        {
+            emit setStatusSymbol(0);
+            emit setStatusMessage(tr("MIDI operation failed; check diagnostics"));
+        }
+    }
+
+    // Emit last so a follow-up request can publish its own status afterwards.
+    emit isFinished();
 };
 
 /***************************** requestPatchChange() *************************
@@ -903,6 +1166,7 @@ void SysxIO::checkPatchChange(QString name)
 *****************************************************************************/
 void SysxIO::sendSysx(QString sysxMsg)
 {
+	setNoError(true);
 	Preferences *preferences = Preferences::Instance();  bool ok;
 	int midiOutPort = preferences->getPreferences("Midi", "MidiOut", "device").toInt(&ok, 10);	// Get midi out device from preferences.
 	int midiInPort = preferences->getPreferences("Midi", "MidiIn", "device").toInt(&ok, 10);	// Get midi in device from preferences.
@@ -910,14 +1174,12 @@ void SysxIO::sendSysx(QString sysxMsg)
 	midiIO *midi = new midiIO();
     QList<QString> midiInDevices = midi->getMidiInDevices();
 	  QList<QString> midiOutDevices = midi->getMidiOutDevices();
-	  if ( midiInDevices.contains("BOSS GT-10") )
-    {
-      midiInPort = midiInDevices.indexOf("BOSS GT-10")+1;
-    };
-	  if ( midiOutDevices.contains("BOSS GT-10") )
-    {
-      midiOutPort = midiOutDevices.indexOf("BOSS GT-10")+1;
-    };  
+	  const int gt10InPort = findGt10Port(midiInDevices);
+    if (gt10InPort >= 0)
+        midiInPort = gt10InPort;
+	  const int gt10OutPort = findGt10Port(midiOutDevices);
+    if (gt10OutPort >= 0)
+        midiOutPort = gt10OutPort;  
 	midi->sendSysxMsg(sysxMsg, midiOutPort, midiInPort);
 			 /*DeBugGING OUTPUT */
 	if(preferences->getPreferences("Midi", "DBug", "bool")=="true")
@@ -995,7 +1257,7 @@ void SysxIO::returnPatchName(QString sysxMsg)
 			this, SLOT(returnPatchName(QString)));
 	
 	QString name; 
-	if(sysxMsg.size()/2 == 29)   
+	if(isValidPatchNameReply(sysxMsg))   
 	{		
 		int dataStartOffset = sysxNameOffset;   //pointer to start of names in patch file at xxxx bytes.
 		QString hex1, hex2, hex3, hex4;
@@ -1019,9 +1281,9 @@ void SysxIO::returnPatchName(QString sysxMsg)
 			i++;
 		};
 	}
-	else if (sysxMsg.size()/2 > 0 && sysxMsg.size()/2 != 29)
-  {name = tr("bad data");} 
-  else {name = tr("no reply"); };  
+	else if (!sysxMsg.isEmpty())
+  {name = tr("bad data");}
+  else {name = tr("no reply");};  
 	emit patchName(name);	
 };
 
@@ -1108,6 +1370,42 @@ void SysxIO::emitStatusdBugMessage(QString dBug)
 	emit setStatusdBugMessage(dBug);
 };
 
+void SysxIO::sendPatchWriteAndVerify(QString sysxMsg, int bank, int patch)
+{
+    setDeviceReady(false);
+    setNoError(true);
+    this->verifyPermanentPatchReadback = false;
+    this->pendingPermanentPatchExpectedData.clear();
+    const QString readbackRequest = MidiTable::Instance()->patchRequest(bank, patch);
+    const QString writeAddress = sysxMsg.mid(sysxAddressOffset * 2, 8);
+    const QString readAddress = readbackRequest.mid(sysxAddressOffset * 2, 8);
+    if (writeAddress.size() != 8 || readAddress.size() != 8 || writeAddress != readAddress)
+    {
+        setSyncStatus(false);
+        setDeviceReady(true);
+        emit errorSignal(tr("Permanent Patch Verification"), tr("write target does not match the requested bank/patch readback address"));
+        emit patchMemoryWriteVerified(false);
+        return;
+    }
+    this->pendingPermanentPatchExpectedData = gt10SysxPayload(sysxMsg, false);
+    if (this->pendingPermanentPatchExpectedData.isEmpty())
+    {
+        setSyncStatus(false);
+        setDeviceReady(true);
+        emit errorSignal(tr("Permanent Patch Verification"), tr("could not prepare patch data for readback verification"));
+        emit patchMemoryWriteVerified(false);
+        return;
+    }
+
+    this->pendingPermanentPatchBank = bank;
+    this->pendingPermanentPatch = patch;
+    this->verifyPermanentPatchReadback = true;
+    setSyncStatus(false);
+    QObject::disconnect(this, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString)));
+    QObject::connect(this, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString)));
+    sendSysx(sysxMsg);
+};
+
 void SysxIO::systemWrite()
 {
  	setDeviceReady(false);			// Reserve the device for interaction.
@@ -1141,9 +1439,20 @@ void SysxIO::systemWrite()
 			sysxMsg.append(hex);
 		}; 
 	}; 
-	//setSyncStatus(true);		// In advance of the actual data transfer we set it already to sync.
-	sendSysx(sysxMsg);	// Send the data.
-	setDeviceReady(true);
+	setNoError(true);
+	this->pendingSystemExpectedData = gt10SysxPayload(sysxMsg, true);
+	if (this->pendingSystemExpectedData.isEmpty())
+	{
+		setSyncStatus(false);
+		setDeviceReady(true);
+		emit errorSignal(tr("System Write Verification"), tr("could not prepare valid System data for readback verification"));
+		return;
+	}
+	this->verifySystemReadback = true;
+	setSyncStatus(false); // Keep this write unverified until readback succeeds.
+	QObject::disconnect(this, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString)));
+	QObject::connect(this, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString)));
+	sendSysx(sysxMsg);	// resetDevice() releases the device after the worker completes.
 };
 
 void SysxIO::systemDataRequest()
@@ -1157,7 +1466,8 @@ void SysxIO::systemDataRequest()
 	       	setDeviceReady(false); // Reserve the device for interaction.
 		      QObject::disconnect(this, SIGNAL(sysxReply(QString)));
 		      QObject::connect(this, SIGNAL(sysxReply(QString)), this, SLOT(systemReply(QString)));
-		      sendSysx(systemRequest); // GT-10 System area data Request.    
+		      setNoError(true); // A fresh read must not inherit a previous transfer failure.
+              sendSysx(systemRequest); // GT-10 System area data Request.    
           
           emit setStatusProgress(0);
          }
@@ -1175,12 +1485,13 @@ void SysxIO::systemDataRequest()
 
 void SysxIO::systemReply(QString replyMsg)
 {
+	const bool verifyingSystemWrite = this->verifySystemReadback;
 	QObject::disconnect(this, SIGNAL(sysxReply(QString)), this, SLOT(systemReply(QString)));
 	setDeviceReady(true); // Free the device after finishing interaction.
   
 	if(noError())
 	{
-		if(replyMsg.size()/2 == 2236)
+		if(replyMsg.size()/2 == systemSize && replyMsg.startsWith("F0410000002F12") && replyMsg.endsWith("F7"))
 		{
 		/* TRANSLATE SYSX MESSAGE FORMAT to 128 byte data blocks */
 	QString header = "F0410000002F12";
@@ -1262,15 +1573,35 @@ void SysxIO::systemReply(QString replyMsg)
   };    
 	replyMsg = reBuild.simplified().toUpper().remove("0X").remove(" ");
 		
+		const QString actualSystemPayload = gt10SysxPayload(replyMsg, true);
+		const bool systemWriteVerified = !verifyingSystemWrite ||
+		    (!actualSystemPayload.isEmpty() && actualSystemPayload == this->pendingSystemExpectedData);
 		QString area = "System";
 		setFileSource(area, replyMsg);		// Set the source to the data received.
-		setFileName(tr("System Data from ") + deviceType);	// Set the file name to GT-10 system for the display.
+		setFileName(tr("System Data from ") + deviceType);	// Set the file name to GT-10B system for the display.
 		setDevice(true);				// Patch received from the device so this is set to true.
-		setSyncStatus(true);			// We can't be more in sync than right now! :)
+		if (systemWriteVerified)
+		{
+			setSyncStatus(true);
+			if (verifyingSystemWrite)
+				emit setStatusdBugMessage(tr("GT-10 System write readback verified"));
+		}
+		else
+		{
+			setSyncStatus(false);
+			setNoError(false);
+			emit errorSignal(tr("System Write Verification"), tr("GT-10 System readback did not match the data sent"));
+		}
 		
 		}
 		else
 		{
+			if (verifyingSystemWrite)
+			{
+				setSyncStatus(false);
+				setNoError(false);
+				emit errorSignal(tr("System Write Verification"), tr("GT-10 returned an invalid System readback"));
+			}
 			QMessageBox *msgBox = new QMessageBox();
 			msgBox->setWindowTitle(deviceType + tr(" Fx FloorBoard connection Error !!"));
 			msgBox->setIcon(QMessageBox::Warning);
@@ -1286,6 +1617,13 @@ void SysxIO::systemReply(QString replyMsg)
 			msgBox->exec();
 		};
    };
+	if (verifyingSystemWrite)
+	{
+		if (!noError())
+			setSyncStatus(false);
+		this->verifySystemReadback = false;
+		this->pendingSystemExpectedData.clear();
+	}
 		emit setStatusMessage(tr("Ready"));   
 };
 
@@ -1327,22 +1665,22 @@ void SysxIO::writeToBuffer()
 			sysxMsg.append(hex);
 		}; 
 	}; 
-	setSyncStatus(true);		// In advance of the actual data transfer we set it already to sync.
+	setNoError(true);
+this->pendingBufferExpectedData = gt10SysxPayload(sysxMsg, false);
+if (this->pendingBufferExpectedData.isEmpty())
+{
+    setSyncStatus(false);
+    emit errorSignal(tr("Patch Buffer Verification"), tr("could not prepare patch data for readback verification"));
+    setDeviceReady(true);
+    emit patchBufferWriteVerified(false);
+    return;
+}
+this->verifyBufferReadback = true;
+setSyncStatus(false); // Keep this patch unverified until readback succeeds.
 	
+	QObject::disconnect(this, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString)));
 	QObject::connect(this, SIGNAL(sysxReply(QString)),	// Connect the result signal 
 		this, SLOT(resetDevice(QString)));					// to a slot that will reset the device after sending.
 	sendSysx(sysxMsg);	// Send the data.
-		
-		emit setStatusProgress(33); // time wasting sinusidal statusbar progress
-		SLEEP(150);
-		emit setStatusProgress(66);
-		SLEEP(150);		
-		emit setStatusProgress(100);
-		SLEEP(150);		
-		emit setStatusProgress(75);
-		SLEEP(150);		
-		emit setStatusProgress(42);
-		SLEEP(150); 
-		emit setStatusMessage(tr("Ready"));
-	  setDeviceReady(true);
+	// resetDevice() releases the device when the MIDI worker completes.
 };

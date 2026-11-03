@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
-** This file is part of "GT-10 Fx FloorBoard".
+** This file is part of "GT-10B Fx FloorBoard".
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -25,7 +25,12 @@
 #define CUSTOMCONTROLGRAPHICEQ_H
 
 #include <QWidget>
+#include <QtGui>
+
+// Qt 5 split widget classes out of QtGui; retain Qt 4 compatibility.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QtWidgets>
+#endif
 #include <QFrame>
 #include "customGraphicEQGraph.h"
 #include "customKnob.h"
@@ -126,17 +131,6 @@ private:
 	QString hex_9;
 	QString hex_10;
 	QString hex_11;
-	QString addr_1;
-  QString addr_2;
-  QString addr_3;
-  QString addr_4;
-  QString addr_5;
-  QString addr_6;
-  QString addr_7;
-  QString addr_8;
-  QString addr_9;
-  QString addr_10;
-  QString addr_11;
 	QString hex1;
 	QString hex2;
 	QString hex3;

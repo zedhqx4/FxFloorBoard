@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -21,7 +21,12 @@
 **
 ****************************************************************************/
 
+#include <QtGui>
+
+// Qt 5 moved widget classes from QtGui into the QtWidgets module.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QtWidgets>
+#endif
 #include <QFile>
 #include <QDataStream>
 #include <QByteArray>
@@ -168,10 +173,10 @@ bulkLoadDialog::bulkLoadDialog()
 	{
 		this->data = file.readAll();     // read the pre-selected file, copy to 'data'
 		QByteArray GXG_default;
-		QFile file(":default.syx");           // Read the default GT-10 sysx file .
+		QFile file(":default.syx");           // Read the default GT-10B sysx file .
     if (file.open(QIODevice::ReadOnly))
 	  {	default_data = file.readAll(); };
-	  QFile GXGfile(":default.gxg");           // Read the default GT-10 GXG file .
+	  QFile GXGfile(":default.gxg");           // Read the default GT-10B GXG file .
     if (GXGfile.open(QIODevice::ReadOnly))
 	  {	GXG_default = GXGfile.readAll(); };
 	  QFile hexfile(":HexLookupTable.hex");           // Read the HexLookupTable for the SMF header file .
@@ -520,8 +525,8 @@ void bulkLoadDialog::loadSYX()        //********************************* SYX Fi
 void bulkLoadDialog::loadSMF()    // **************************** SMF FILE FORMAT ***************************
 {	
   
-	QByteArray temp;                         // TRANSLATION of GT-10 SMF PATCHES, data read from smf patch **************
-	if ( data.at(37) != default_data.at(5) ){    // check if a valid GT-10 file
+	QByteArray temp;                         // TRANSLATION of GT-10B SMF PATCHES, data read from smf patch **************
+	if ( data.at(37) != default_data.at(5) ){    // check if a valid GT-10B file
   QMessageBox *msgBox = new QMessageBox();
 	msgBox->setWindowTitle(QObject::tr("SMF file import"));
 	msgBox->setIcon(QMessageBox::Warning);
@@ -530,7 +535,7 @@ void bulkLoadDialog::loadSMF()    // **************************** SMF FILE FORMA
 	msgText.append("<font size='+1'><b>");
 	msgText.append(QObject::tr("This is not a GT-10 file!"));
 	msgText.append("<b></font><br>");
-	msgText.append(QObject::tr("this file is a GT-10 Bass version<br>"));
+	msgText.append(QObject::tr("this file is a GT-10B Bass version<br>"));
 	msgText.append(QObject::tr("*Loading this file may have unpredictable results*."));
 	msgBox->setText(msgText);
 	msgBox->setStandardButtons(QMessageBox::Ok);

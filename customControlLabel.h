@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -25,7 +25,12 @@
 #define CUSTOMCONTROLLABEL_H
 
 #include <QWidget>
+#include <QtGui>
+
+// Qt 5 split widget classes out of QtGui; retain Qt 4 compatibility.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QtWidgets>
+#endif
 
 class customControlLabel : public QWidget
 {

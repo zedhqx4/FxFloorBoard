@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -20,6 +20,11 @@
 ** 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 **
 ****************************************************************************/
+
+#include <QtGlobal>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <QtWidgets>
+#endif
 
 #include <QRegExp>
 #include "customRenameWidget.h"
@@ -94,7 +99,7 @@ void customRenameWidget::updateName(QString name)
 	{
 		if(i<name.size())
 		{	
-                char asciiChar = name.at(i).toLatin1();
+				char asciiChar = name.at(i).toLatin1();
 				int asciiValue = (int)asciiChar;
 				QString nameHexValue = QString::number(asciiValue, 16).toUpper();
 				if(nameHexValue.length() < 2) nameHexValue.prepend("0");

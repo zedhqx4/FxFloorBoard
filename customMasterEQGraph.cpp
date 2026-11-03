@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag.
 ** All rights reserved.
-** This file is part of "GT-10 Fx FloorBoard".
+** This file is part of "GT-10B Fx FloorBoard".
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -21,6 +21,11 @@
 **
 ****************************************************************************/
 
+#include <QtGlobal>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <QtWidgets>
+#endif
+
 #include "customMasterEQGraph.h"
 #include <QPainter>
 #include <QMouseEvent>
@@ -35,12 +40,11 @@ customMasterEQGraph::customMasterEQGraph (QWidget *parent)
 
 customMasterEQGraph::~customMasterEQGraph (void)
 {
-
 }
 
 void customMasterEQGraph::setLowGain ( unsigned short iLowGain )
 {
-     //if (iLowGain > 24) iLowGain = 24;
+     if (iLowGain > 24) iLowGain = 24;
         if (m_iLowGain != iLowGain) {
                 m_iLowGain  = iLowGain;
                 update();
@@ -53,9 +57,10 @@ unsigned short customMasterEQGraph::LowGain (void) const
         return m_iLowGain;
 }
 
+
 void customMasterEQGraph::setMidFreq ( unsigned short iMidFreq )
 {
-     //if (iMidFreq > 27) iMidFreq = 27;
+     if (iMidFreq > 27) iMidFreq = 27;
         if (m_iMidFreq != iMidFreq) {
                 m_iMidFreq  = iMidFreq;
                 update();
@@ -68,9 +73,10 @@ unsigned short customMasterEQGraph::MidFreq (void) const
         return m_iMidFreq;
 }
 
+
 void customMasterEQGraph::setMidQ ( unsigned short iMidQ )
 {
-    //if (iMidQ > 5) iMidQ = 5;
+    if (iMidQ > 5) iMidQ = 5;
         if (m_iMidQ != iMidQ) {
                 m_iMidQ  = iMidQ;
                 update();
@@ -86,7 +92,7 @@ unsigned short customMasterEQGraph::MidQ (void) const
 
 void customMasterEQGraph::setMidGain ( unsigned short iMidGain )
 {
-    //if (iMidGain > 24) iMidGain = 24;
+    if (iMidGain > 24) iMidGain = 24;
         if (m_iMidGain != iMidGain) {
                 m_iMidGain  = iMidGain;
                 update();
@@ -101,7 +107,7 @@ unsigned short customMasterEQGraph::MidGain (void) const
 
 void customMasterEQGraph::setHighGain ( unsigned short iHighGain )
 {
-    //if (iHighGain > 24) iHighGain = 24;
+    if (iHighGain > 24) iHighGain = 24;
         if (m_iHighGain != iHighGain) {
                 m_iHighGain  = iHighGain;
                 update();
@@ -116,7 +122,7 @@ unsigned short customMasterEQGraph::HighGain (void) const
 
 void customMasterEQGraph::setLevel ( unsigned short iLevel )
 {
-    //if (iLevel > 100) iLevel = 100;
+    if (iLevel > 100) iLevel = 100;
         if (m_iLevel != iLevel) {
                 m_iLevel  = iLevel;
                 update();
@@ -129,6 +135,7 @@ unsigned short customMasterEQGraph::Level (void) const
         return m_iLevel;
 }
 
+
 void customMasterEQGraph::paintEvent ( QPaintEvent *pPaintEvent )
 {
     QPixmap image = QPixmap(":images/EQ_graph.png");
@@ -138,107 +145,124 @@ void customMasterEQGraph::paintEvent ( QPaintEvent *pPaintEvent )
     QPainter painter(this);
     painter.drawPixmap(target, image, source);
 
-    int h   =     height();
-    int w   =     width();
-    
-    int lg  = h - (m_iLowGain*4)+10;
-    
-    int mf  =     (m_iMidFreq*17) + 12;
-    int mq  = h - (m_iMidQ*18)-80;
-    int mg  = h - (m_iMidGain*4+10);
-    
-    int hg  = h - (m_iHighGain*4)+10;
-    
-    int lev = 80 - (m_iLevel);
+    int h  = height();
+    int w  = width();
+
+    int lg  = h - (m_iLowGain*4) - 25;
+
+    int mf = (m_iMidFreq*20) + 5;
+    int mq = h*100/82-(m_iMidQ*40);
+    int mg = h - (m_iMidGain)-40;
+
+    int hg  = h - (m_iHighGain*4) - 25;
+
+    int lev = h/10 - (m_iLevel);
 
     QLinearGradient grad(0, 0, w << 1, h << 1);
     grad.setColorAt(0.0f, Qt::yellow);
     grad.setColorAt(1.0f, Qt::black);
 
     painter.setBrush(grad);
-                // horizonal, vertical
+    //painter.drawPath(path);
 
-    poly.putPoints(0,           11,
-                   0,           h,                         // [0]
-                   0,          (lg)+lev-93,                // [1]
-                   (w/10)*2,    lg+lev-93,                 // [2]
-                   (w/10)*4,    lev+52,                    // [3]
-                   mf-mq,       mg+m_iMidGain-25,          // [4]
-                   mf,         (h*100/82)-(m_iMidGain*7)-25,  // [5]
-                   mf+mq,       mg+m_iMidGain-25,          // [6]
-                   (w/10)*6,    lev+52,                    // [7]
-                   (w/10)*8,   (hg+lev-93),                // [8]
-                   w+5,          (hg)+lev-93,                // [9]
-                   w+5,           h  );                      // [10]
+    poly.putPoints(0, 11,
+            0,       h,                         // [0]    horizonal, vertical
+
+            0,       (h/4*3)+lev,               // [1]
+            w/4,      lg+lev,                   // [2]
+            w/2,     (h*50/78)+lev,             // [3]
+
+            mf-mq,   mg+lev,                    // [4]
+            mf,      ((h*100/82)-(m_iMidGain*5))+lev, // [5]
+            mf+mq,   mg+lev,                    // [6]
+
+            w/3*2,     (h*50/78)+lev,           // [7]
+            w/4*3,      hg+lev,                 // [8]
+            w,       (h/4*3)+lev,               // [9]
+
+            w,        h  );                     // [10]
 
     QPainterPath loHi;
-    loHi.moveTo(poly.at(1));
+    loHi.moveTo(poly.at(0));
+    loHi.lineTo(poly.at(1));
     loHi.cubicTo(poly.at(1), poly.at(2), poly.at(3));
     loHi.lineTo(poly.at(7));
     loHi.cubicTo(poly.at(7), poly.at(8), poly.at(9));
-    loHi.cubicTo(poly.at(9), poly.at(8), poly.at(7));
-    loHi.lineTo(poly.at(3));
-    loHi.cubicTo(poly.at(3), poly.at(2), poly.at(1));
+    loHi.lineTo(poly.at(10));
+
+
 
     QPainterPath Mid;
     Mid.moveTo(poly.at(4));
     Mid.cubicTo(poly.at(4), poly.at(5), poly.at(6));
-    Mid.cubicTo(poly.at(6), poly.at(5), poly.at(4));
 
     painter.setPen(Qt::black);
-    QPen pen;
-    pen.setWidth(3);
-    painter.setPen(pen);
-    painter.setRenderHint(QPainter::Antialiasing, true);
-    QPainterPath graph;
-    graph.moveTo(0, h);
-    bool intersect = false;
-    int x = 0;
-    int a = 0;
-    int b = 0;
-    int c = 0;
-    for(x=0; x<520; ++x)
-    {
-        for( a=0; a<220&&intersect!=true; ++a)
-        {
-            intersect = loHi.intersects(QRectF(x, a, 1, 1));
-        };
-        intersect = false;
 
-        for( b=0; b<220&&intersect!=true; ++b)
-        {
-            intersect = Mid.intersects(QRectF(x, b, 1, 1));
-        };
-        if(b>=220){b=110;};
-        intersect = false;
-        c = a+b-100;
-        if(c>200) {c=200;};
-        graph.lineTo(x, c);
-        x=x+9;
-    };
-    graph.lineTo(w, h);
-
+    //QPainterPath graph = (loHi.subtracted(Mid));
+    painter.drawPath(loHi);
+    grad.setColorAt(0.0f, Qt::red);
     painter.setBrush(grad);
-    painter.drawPath(graph);
+    painter.drawPath(Mid);
+    painter.setBrush(Qt::red);
+    //painter.drawRect(nodeRect(1));
+    painter.drawRect(nodeRect(2));
+    //painter.drawRect(nodeRect(3));
+    painter.setBrush(Qt::green);
+    painter.drawRect(nodeRect(4));
+    painter.drawRect(nodeRect(5));
+    painter.drawRect(nodeRect(6));
+    painter.setBrush(Qt::blue);
+    //painter.drawRect(nodeRect(7));
+    painter.drawRect(nodeRect(8));
+    //painter.drawRect(nodeRect(9));
+
+
     painter.end();
+
     QFrame::paintEvent(pPaintEvent);
 }
+
 
 // Mouse interaction.
 void customMasterEQGraph::mousePressEvent ( QMouseEvent *pMouseEvent )
 {
+    if (pMouseEvent->button() == Qt::LeftButton) {
+            const QPoint& pos = pMouseEvent->pos();
+            int iDragNode = nodeIndex(pos);
+            if (iDragNode >= 0) {
+                                 if (iDragNode == 1 || iDragNode == 5) {setCursor(Qt::SizeVerCursor); };
+                                 if (iDragNode == 2 || iDragNode == 4) {setCursor(Qt::SizeHorCursor); };
+                                 if (iDragNode == 3) {setCursor(Qt::SizeAllCursor); };
+                    m_iDragNode = iDragNode;
+                    m_posDrag = pos;
+            }
+    }
+
+    QFrame::mousePressEvent(pMouseEvent);
 
 }
+
 
 void customMasterEQGraph::mouseMoveEvent ( QMouseEvent *pMouseEvent )
 {
 
+    dragNode(pMouseEvent->pos());
 }
+
 
 void customMasterEQGraph::mouseReleaseEvent ( QMouseEvent *pMouseEvent )
 {
+    QFrame::mouseReleaseEvent(pMouseEvent);
 
+        dragNode(pMouseEvent->pos());
+
+        if (m_iDragNode >= 0) {
+                m_iDragNode = -1;
+                unsetCursor();
+        }
 }
+
+
 
 // Draw rectangular point.
 QRect customMasterEQGraph::nodeRect ( int iNode ) const
@@ -247,14 +271,92 @@ QRect customMasterEQGraph::nodeRect ( int iNode ) const
         return QRect(pos.x() - 4, pos.y() - 4, 8, 8);
 }
 
+
 int customMasterEQGraph::nodeIndex ( const QPoint& pos ) const
 {     
+        if (nodeRect(8).contains(pos))
+                return 5; // HighGain
+
+        if (nodeRect(6).contains(pos))
+                return 4; // MidQ
+
+        if (nodeRect(5).contains(pos))
+                return 3; // MidFreq/MidGain
+
+        if (nodeRect(4).contains(pos))
+                return 2; // MidQ
+
+        if (nodeRect(2).contains(pos))
+                return 1; //LowGain
+
         return -1;
 }
 
 void customMasterEQGraph::dragNode ( const QPoint& pos )
 {
+        static unsigned short m_iLevel0 = 0; // Dummy!
+        unsigned short *piRate  = NULL;
+        unsigned short *piLevel = NULL;
+        switch (m_iDragNode) {
+        case 1: // LowGain
+                piRate  = &m_iLevel0;
+                piLevel = &m_iLowGain;
+                break;
+        case 2: // MidQ
+                piRate  = &m_iMidQ;
+                piLevel = &m_iLevel0;
+                break;
+        case 3: // MidFreq/MidGain
+                piRate  = &m_iMidFreq;
+                piLevel = &m_iMidGain;
+                break;
+        case 4: // MidQ
+                piRate  = &m_iMidQ;
+                piLevel = &m_iLevel0;
+                break;
+        case 5: // HighGain
+                piRate  = &m_iLevel0;
+                piLevel = &m_iHighGain;
+                break;
+        }
 
+        if (piRate && piLevel) {
+                int iRate = int(*piRate) + ((pos.x() - m_posDrag.x()) << 6) / (width() >> 2);
+                int iLevel = int(*piLevel) + ((m_posDrag.y() - pos.y()) << 7) / height();
+                if (iLevel < 0) iLevel = 0;
+                else
+                if (iLevel > 40) iLevel = 40;
+                if (iRate < 0) iRate = 0;
+                else
+                if (iRate > 30) iRate = 30;
+                if (*piRate  != (unsigned short) iRate ||
+                        *piLevel != (unsigned short) iLevel) {
+                        m_posDrag = pos;
+                        switch (m_iDragNode) {
+                        case 1: // LowGain
+                                setLowGain(iLevel);
+                                break;
+                        case 2: // MidQ
+                                setMidQ(iRate);
+                                break;
+                        case 3: // MidFreq/MidGain
+                                setMidFreq(iRate);
+                                setMidGain(iLevel);
+                                break;
+                        case 4: // MidQ
+                                setMidQ(iRate);
+                                break;
+                        case 5: // HighGain
+                                setHighGain(iLevel);
+                                break;
+
+                        }
+                }
+        } else if (nodeIndex(pos) >= 0) {
+                setCursor(Qt::PointingHandCursor);
+        } else {
+                unsetCursor();
+        }
 }
 
 void customMasterEQGraph::updateSlot(  QString hex_1, QString hex_2, QString hex_3,
@@ -273,4 +375,11 @@ void customMasterEQGraph::updateSlot(  QString hex_1, QString hex_2, QString hex
     setMidGain(this->hex_4.toShort(&ok, 16));
     setHighGain(this->hex_5.toShort(&ok, 16));
     setLevel(this->hex_6.toShort(&ok, 16));
+
 }
+
+
+
+
+
+

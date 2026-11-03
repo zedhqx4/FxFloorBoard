@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag.
 ** All rights reserved.
-** This file is part of "GT-10 Fx FloorBoard".
+** This file is part of "GT-10B Fx FloorBoard".
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -20,6 +20,11 @@
 ** 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 **
 ****************************************************************************/
+
+#include <QtGlobal>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <QtWidgets>
+#endif
 
 #include "customControlTarget.h"
 #include "MidiTable.h"
@@ -66,7 +71,7 @@ customControlTarget::customControlTarget(QWidget *parent,
     if(valueHex.length() < 2) valueHex.prepend("0");
 
     MidiTable *midiTable = MidiTable::Instance();
-    //QString valueStr = midiTable->getValue("Structure", "0B", "00", "21", valueHex);  // lookup the target values
+    QString valueStr = midiTable->getValue("Structure", "0B", "00", "21", valueHex);  // lookup the target values
 
     int maxRange = QString("7F").toInt(&ok, 16) + 1;
     value = valueHex.toInt(&ok, 16);
@@ -143,9 +148,9 @@ customControlTarget::customControlTarget(QWidget *parent,
     mainLayout->addStretch(0);
 
     this->setLayout(mainLayout);
-    this->setFixedHeight(this->knobTarget->height() + 15 + 12);
-    this->setFixedHeight(this->knobMin->height() + 15 + 12);
-    this->setFixedHeight(this->knobMax->height() + 15 + 12);
+    this->setFixedHeight(this->knobTarget->height() + 13 + 12);
+    this->setFixedHeight(this->knobMin->height() + 13 + 12);
+    this->setFixedHeight(this->knobMax->height() + 13 + 12);
 
     QObject::connect(this->parent(), SIGNAL( dialogUpdateSignal() ),
                      this, SLOT( dialogUpdateSignal() ));

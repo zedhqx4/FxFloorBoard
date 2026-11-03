@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -57,25 +57,7 @@ void menuPage_midi::setEditPages()
 	editDetails()->page()->addComboBox(2, 3, 1, 1, "02", "00", "0D", "System"); // map select
 	
 	editDetails()->page()->addGroupBox(0, 0, 1, 1);
-    editDetails()->addPage("02", "00", "7F", "00", "System");
+	editDetails()->addPage();
                           
-    editDetails()->page()->newGroupBox("MIDI PROGRAM TABLE - BANK 0.            Caution: Changes are automatically written to the GT-10.");
-    editDetails()->page()->addMultiComboBox(0, 0, 1, 1, "02", "01", "00", "System");
-    editDetails()->page()->addGroupBox(0, 0, 1, 1);
-    editDetails()->addPage("02", "00", "7F", "01", "System");
-
-    editDetails()->page()->newGroupBox("MIDI PROGRAM TABLE - BANK 1.            Caution: Changes are automatically written to the GT-10.");
-    editDetails()->page()->addMultiComboBox(0, 0, 1, 1, "02", "03", "00", "System");
-    editDetails()->page()->addGroupBox(0, 0, 1, 1);
-    editDetails()->addPage("02", "00", "7F", "02", "System");
-
-    editDetails()->page()->newGroupBox("MIDI PROGRAM TABLE - BANK 2.            Caution: Changes are automatically written to the GT-10.");
-    editDetails()->page()->addMultiComboBox(0, 0, 1, 1, "02", "05", "00", "System");
-    editDetails()->page()->addGroupBox(0, 0, 1, 1);
-    editDetails()->addPage("02", "00", "7F", "03", "System");
-
-    editDetails()->page()->newGroupBox("MIDI PROGRAM TABLE - BANK 3.            Caution: Changes are automatically written to the GT-10.");
-    editDetails()->page()->addMultiComboBox(0, 0, 1, 1, "02", "07", "00", "System");
-    editDetails()->page()->addGroupBox(0, 0, 1, 1);
-    editDetails()->addPage("02", "00", "7F", "04", "System");
+ 
 };

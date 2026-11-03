@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -24,7 +24,12 @@
 #ifndef STOMPBOX_H
 #define STOMPBOX_H
 
+#include <QtGui>
+
+// Qt 5 moved widget classes from QtGui into QtWidgets.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QtWidgets>
+#endif
 #include "MidiTable.h"
 #include "editWindow.h"
 #include "customButton.h"
@@ -52,9 +57,9 @@ public:
 
 
 	void setComboBox(QString hex1, QString hex2, QString hex3, 
-	QRect geometry = QRect(7, 79, 80, 13));
+		QRect geometry = QRect(7, 79, 80, 13));
   void setComboBox2(QString hex1, QString hex2, QString hex3, 
-	QRect geometry = QRect(7, 99, 80, 13));
+		QRect geometry = QRect(7, 99, 80, 13));
 	void setKnob1(QString hex1, QString hex2, QString hex3);
 	void setKnob2(QString hex1, QString hex2, QString hex3);
 	void setSlider1(QString hex1, QString hex2, QString hex3);
@@ -75,15 +80,18 @@ public:
 	void updateSlider4(QString hex1, QString hex2, QString hex3);
 	void updateSlider5(QString hex1, QString hex2, QString hex3);
 	void updateComboBox(QString hex1, QString hex2, QString hex3);
+	//void updateComboBox2(QString hex1, QString hex2, QString hex3);
 	void updateButton(QString hex1, QString hex2, QString hex3);
 	void updateSwitch(QString hex1, QString hex2, QString hex3);
+
 	void setComboBoxCurrentIndex(int index);
-    unsigned int getId();
-    void setEditPages();
-    editWindow* editDetails();
-    editWindow *editDialog;
-    void getStompOrder();
-    unsigned int id;
+	//void setComboBoxCurrentIndex2(int index);
+
+	unsigned int getId();
+
+	virtual void setEditPages() {};
+	editWindow* editDetails();
+	void getStompOrder();
 	
 
 public slots:
@@ -91,7 +99,8 @@ public slots:
 	void valueChanged(int value, QString hex1, QString hex2, QString hex3);
 	void valueChanged(bool value, QString hex1, QString hex2, QString hex3);
 	void valueChanged(int index);
-  virtual void updateSignal() {}
+	//void valueChanged2(int index);
+	virtual void updateSignal() {};
 	void setDisplayToFxName();
 	void pathSwitchSignal(bool value); 
 	void updateStompPath(); 
@@ -114,33 +123,14 @@ public slots:
 signals:
 	void valueChanged(QString fxName, QString valueName, QString valueStr);
 	void currentIndexChanged(int index);
+	//void currentIndexChanged2(int index);
 	void dialogUpdateSignal();
 	void setEditDialog(editWindow* editDialog);
 	void notConnectedSignal();
 	void pathSwitchSignal();
 	void pathUpdateSignal();
-  void pageUpdateSignal();
 	void updateStompBoxes();
 	void switchSignal();
-	 void ch_mode_statusSignal(bool value);
-    void channel_A_statusSignal(bool value);
-    void channel_B_statusSignal(bool value);
-    void preamp1_statusSignal(bool value);
-    void preamp2_statusSignal(bool value);
-    void solo1_statusSignal(bool value);
-    void solo2_statusSignal(bool value);
-    void distortion_statusSignal(bool value);
-    void compressor_statusSignal(bool value);
-    void ns1_statusSignal(bool value);
-    void ns2_statusSignal(bool value);
-    void fx1_statusSignal(bool value);
-    void fx2_statusSignal(bool value);
-    void reverb_statusSignal(bool value);
-    void delay_statusSignal(bool value);
-    void chorus_statusSignal(bool value);
-    void sendreturn_statusSignal(bool value);
-    void eq_statusSignal(bool value);
-    void pedal_statusSignal(bool value);
 
 protected:
 	void paintEvent(QPaintEvent *event);
@@ -151,12 +141,17 @@ protected:
 private:
 
 	void emitValueChanged(QString hex1, QString hex2, QString hex3, QString valueHex);
+
+	editWindow *editDialog;
 	QString imagePath;
 	QSize stompSize;
 	QPoint stompPos; 
+	unsigned int id;
+	
 	QPoint dragStartPosition;
 	QPixmap image;
- 	customDial *knob1;
+
+	customDial *knob1;
 	customDial *knob2;
 	customSlider *slider1;
 	customSlider *slider2;
@@ -167,10 +162,9 @@ private:
 	customLed *led;
 	customSwitch *switchbutton;
 	customComboBox *stompComboBox;
-	QString combo_hex1;
-  QString combo_hex2;
-  QString combo_hex3;
-  QString hex1;
+	//customComboBox *stompComboBox2;
+
+	QString hex1;
 	QString hex2;
 	QString hex3;
   customButton *pathSwitch;

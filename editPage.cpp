@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -33,7 +33,6 @@
 #include "customControlLabel.h"
 #include "customControlSwitch.h"
 #include "customControlListMenu.h"
-#include "customMultiComboBox.h"
 #include "customRenameWidget.h"
 
 editPage::editPage(QWidget *parent)
@@ -240,35 +239,6 @@ void editPage::addComboBox(int row, int column, int rowSpan, int columnSpan,
 	{
 		this->layout->addWidget(combobox, row, column, rowSpan, columnSpan, alignment);
 	};
-};
-
-void editPage::addMultiComboBox(int row, int column, int rowSpan, int columnSpan,
-        QString hex1,
-        QString hex2,
-        QString hex3,
-        QString direction,
-        Qt::Alignment alignment)
-{
-    customMultiComboBox *combobox = new customMultiComboBox(this, hex1, hex2, hex3, direction);
-    if(this->stackControlMode)
-    {
-        QObject::connect(combobox, SIGNAL( currentIndexChanged(int) ),
-                    this->stackedFields.at(this->stackControlId), SLOT( setCurrentIndex(int) ));
-        QObject::connect(combobox, SIGNAL( currentIndexChanged(int) ),
-                    this, SLOT( updateDialog(int) ));
-    };
-    if(this->groupBoxMode)
-    {
-        this->groupBoxLayout->addWidget(combobox, row, column, rowSpan, columnSpan, alignment);
-    }
-    else if(this->stackFieldMode)
-    {
-        this->stackField->addWidget(combobox, row, column, rowSpan, columnSpan, alignment);
-    }
-    else
-    {
-        this->layout->addWidget(combobox, row, column, rowSpan, columnSpan, alignment);
-    };
 };
 
 void editPage::addNameEdit(int row, int column, int rowSpan, int columnSpan,

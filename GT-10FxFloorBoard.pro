@@ -1,6 +1,6 @@
 #############################################################################
 ##
-## Copyright (C) 2007~2014 Colin Willcocks.
+## Copyright (C) 2007~2010 Colin Willcocks.
 ## Copyright (C) 2005~2007 Uco Mesdag. 
 ## All rights reserved.
 ##
@@ -26,7 +26,7 @@ TEMPLATE = app
 CONFIG += static
 CONFIG += embed_manifest_exe
 #ifdef Q_OS_MAC
-CONFIG += release
+CONFIG += release ppc x86
 TARGET = "GT-10FxFloorBoard"
 DESTDIR = ./packager
 #else 
@@ -34,10 +34,6 @@ CONFIG += release
 TARGET = "GT-10FxFloorBoard"
 DESTDIR = ./packager
 #endif
-#ifdef Q_PROCESSOR_ARM
-DESTDIR = ./
-#endif
-
 	OBJECTS_DIR += release
 	UI_DIR += ./generatedfiles
 	MOC_DIR += ./generatedfiles/release
@@ -53,77 +49,64 @@ CODECFORTR = UTF-8
 
 DEPENDPATH += .
 QT += xml
-QT += widgets
-QT += printsupport
+
+# Qt 5 moved widget classes from QtGui into the QtWidgets module.
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
+
+# The original Qt 4 code relies on QtGui transitively exposing widgets.
+# On Qt 5 Linux, make the QtWidgets umbrella available to legacy translation units.
 
 #Platform dependent file(s)
-win32{
-        exists("C:/SDK/Lib/WinMM.Lib")
-                {	# <-- Change the path to WinMM.Lib here!
-                    LIBS += C:/SDK/Lib/WinMM.Lib	# <-- Change the path here also!
-                }
-        message(Including Windows specific headers and sources...)
+win32 {
+        exists("C:/Progra~1/MS_SDKs/Windows/v6.1/Lib/WinMM.Lib") {	# <-- Change the path to WinMM.Lib here!
+                LIBS += C:/Progra~1/MS_SDKs/Windows/v6.1/Lib/WinMM.Lib	# <-- Change the path here also!
+    } else { 
+        exists("c:/PROGRA~1/MICROS~3/VC/PLATFO~1/Lib/WinMM.Lib") { # Path vs2005 (Vista)
+        	LIBS += c:/PROGRA~1/MICROS~3/VC/PLATFO~1/Lib/WinMM.Lib
+        } else { 
+            LIBS += .\WinMM.Lib
+            message("WINMM.LIB IS REQUIRED. IF NOT INSTALLED THEN")
+            message("PLEASE DOWNLOAD AND INSTALL THE LATEST PLATFORM SDK")
+            message("FROM MICROSOFT.COM AND AFTER INSTALLATION")
+            message("CHANGE THE CORRECT (DOS) PATH TO WinMM.lib")
+            message("IN THIS (GT-10FxFloorBoard.pro) FILE WHERE INDICATED")
+        }
+	}
+	 HEADERS += 
+	 SOURCES += ./windows/RtMidi.cpp                        
+	 INCLUDEPATH += ./windows
+	message(Including Windows specific headers and sources...)
 }
-linux-g++{
-        LIBS += -lasound
-        message("ALSA LIBRARIES SHOULD BE INSTALLED or ERROR will Occur")
-        message("Please install the ALSA Audio System packages if not present")
-        message(Including Linux specific headers and sources...)
+linux-g++ {
+    # Use upstream RtMidi 6.1.0 with its ALSA sequencer backend.
+    LIBS += -lasound -pthread
+    DEFINES += RTMIDI_API_ALSA
+    QMAKE_CXXFLAGS += -std=c++11 -pthread
+    HEADERS += ./third_party/rtmidi-6.1.0/RtMidi.h
+    SOURCES += ./third_party/rtmidi-6.1.0/RtMidi.cpp
+    INCLUDEPATH += ./third_party/rtmidi-6.1.0
+    message(Using vendored RtMidi 6.1.0 with ALSA...)
 }
-linux-g++-64{
-        LIBS += -lasound
-        message("ALSA LIBRARIES SHOULD BE INSTALLED or ERROR will Occur")
-        message("Please install the ALSA Audio System packages if not present")
-        message(Including Linux specific headers and sources...)
+linux-g++-64 {
+    # Use upstream RtMidi 6.1.0 with its ALSA sequencer backend.
+    LIBS += -lasound -pthread
+    DEFINES += RTMIDI_API_ALSA
+    QMAKE_CXXFLAGS += -std=c++11 -pthread
+    HEADERS += ./third_party/rtmidi-6.1.0/RtMidi.h
+    SOURCES += ./third_party/rtmidi-6.1.0/RtMidi.cpp
+    INCLUDEPATH += ./third_party/rtmidi-6.1.0
+    message(Using vendored RtMidi 6.1.0 with ALSA...)
 }
-macx{
-        LIBS += -framework CoreMidi -framework CoreAudio -framework CoreFoundation
-        message("X-Code LIBRARIES SHOULD BE INSTALLED or ERROR will Occur")
-        message("Please install the X-Code Audio System packages if not present")
+macx {
+	LIBS += -framework CoreMidi -framework CoreAudio -framework CoreFoundation
+	message("X-Code LIBRARIES SHOULD BE INSTALLED or ERROR will Occur") 
+	message("Please install the X-Code Audio System packages if not present") 
+	 HEADERS += 
+	 SOURCES += ./macosx/RtMidi.cpp 
+	INCLUDEPATH += ./macosx
 	ICON = GT-10FxFloorBoard.icns
 	message(Including Mac OS X specific headers and sources...)
 }
-ios{
-        LIBS += -framework CoreMidi -framework CoreAudio -framework CoreFoundation
-        message("X-Code LIBRARIES SHOULD BE INSTALLED or ERROR will Occur")
-        message("Please install the X-Code Audio System packages if not present")
-        ICON = GR-55FloorBoard.icns
-        message(Including Mac OS X specific headers and sources...)
-}
-android{
-        message(Including Android specific headers and sources...)
-    OTHER_FILES += \
-    android/AndroidManifest.xml \
-    android/res/layout/splash.xml \
-    android/res/values/libs.xml \
-    android/res/values/strings.xml \
-    android/res/values-de/strings.xml \
-    android/res/values-el/strings.xml \
-    android/res/values-es/strings.xml \
-    android/res/values-et/strings.xml \
-    android/res/values-fa/strings.xml \
-    android/res/values-fr/strings.xml \
-    android/res/values-id/strings.xml \
-    android/res/values-it/strings.xml \
-    android/res/values-ja/strings.xml \
-    android/res/values-ms/strings.xml \
-    android/res/values-nb/strings.xml \
-    android/res/values-nl/strings.xml \
-    android/res/values-pl/strings.xml \
-    android/res/values-pt-rBR/strings.xml \
-    android/res/values-ro/strings.xml \
-    android/res/values-rs/strings.xml \
-    android/res/values-ru/strings.xml \
-    android/res/values-zh-rCN/strings.xml \
-    android/res/values-zh-rTW/strings.xml \
-    android/src/org/kde/necessitas/ministro/IMinistro.aidl \
-    android/src/org/kde/necessitas/ministro/IMinistroCallback.aidl \
-    android/src/org/qtproject/qt5/android/bindings/QtActivity.java \
-    android/src/org/qtproject/qt5/android/bindings/QtApplication.java \
-    android/version.xml \
-    android/midi-driver.apklib
-}
-
 
 
 #Include file(s)
@@ -131,5 +114,3 @@ include(GT-10FxFloorBoard.pri)
 
 #Windows resource file
 win32:RC_FILE = GT-10FxFloorBoard.rc
-
-ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android

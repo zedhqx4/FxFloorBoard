@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
-** This file is part of "GT-10 Fx FloorBoard".
+** This file is part of "GT-10B Fx FloorBoard".
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -24,7 +24,12 @@
 #ifndef MENUPAGE_ASSIGN2_H
 #define MENUPAGE_ASSIGN2_H
 
+#include <QtGui>
+
+// Qt 5 moved widget classes from QtGui into QtWidgets.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QtWidgets>
+#endif
 #include <QWidget>
 #include "menuPage.h"
 

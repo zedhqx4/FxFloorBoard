@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag.
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -20,6 +20,11 @@
 ** 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 **
 ****************************************************************************/
+
+#include <QtGlobal>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <QtWidgets>
+#endif
 
 #include "customControlListMenu.h"
 #include "MidiTable.h"
@@ -52,7 +57,7 @@ customControlListMenu::customControlListMenu(QWidget *parent,
 
         setComboBox();
 
-        //QPoint labelPos, comboboxPos;
+        QPoint labelPos, comboboxPos;
         if(direction == "left")
         {
 
@@ -77,7 +82,7 @@ customControlListMenu::customControlListMenu(QWidget *parent,
                 mainLayout->addWidget(this->controlListComboBox, 0, Qt::AlignLeft);
 
                 this->setLayout(mainLayout);
-                this->setFixedHeight(12 + 16);
+                this->setFixedHeight(12 + 15);
 
         }
   else
@@ -92,7 +97,7 @@ customControlListMenu::customControlListMenu(QWidget *parent,
                 mainLayout->addWidget(this->controlListComboBox, 0, Qt::AlignLeft);
 
                 this->setLayout(mainLayout);
-                this->setFixedHeight(12 + 16);
+                this->setFixedHeight(12 + 15);
 
         };
 
@@ -104,9 +109,7 @@ customControlListMenu::customControlListMenu(QWidget *parent,
 
   QObject::connect(this->controlListComboBox, SIGNAL(currentIndexChanged(int)), this, SIGNAL(currentIndexChanged(int)));
 
-  QObject::connect(this->controlListComboBox, SIGNAL(highlighted(int)), this, SLOT(valueChanged(int)));
-
-  QObject::connect(this->controlListComboBox, SIGNAL(highlighted(int)), this, SIGNAL(currentIndexChanged(int)));
+//QObject::connect(this->parent()->parent(), SIGNAL(updateSignal()), this, SLOT(dialogUpdateSignal()));
 
 };
 
@@ -154,7 +157,7 @@ void customControlListMenu::setComboBox()
         if(maxWidth < 20) { maxWidth = 20; };
 
         this->controlListComboBox->setFixedWidth(maxWidth + 25);
-        this->controlListComboBox->setFixedHeight(16);
+        this->controlListComboBox->setFixedHeight(15);
         this->controlListComboBox->setEditable(false);
         this->controlListComboBox->setFrame(false);
         this->controlListComboBox->setMaxVisibleItems(itemcount);

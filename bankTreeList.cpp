@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag.
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -20,6 +20,11 @@
 ** 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 **
 ****************************************************************************/
+
+#include <QtGlobal>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <QtWidgets>
+#endif
 
 #include <QLayout>
 #include <QMessageBox>
@@ -561,7 +566,7 @@ void bankTreeList::updatePatch(QString replyMsg)
 
 
         replyMsg = replyMsg.remove(" ").toUpper();       /* TRANSLATE SYSX MESSAGE FORMAT to 128 byte data blocks */
-        if (replyMsg.size()/2 == 1784){
+        if (replyMsg.size()/2 == patchReplySize && replyMsg.startsWith("F0410000002F12") && replyMsg.endsWith("F7")){
         QString header = "F0410000002F12";
         QString footer ="00F7";
         QString addressMsb = replyMsg.mid(14,4);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -40,17 +40,14 @@ public:
 		QString imagePathFloor = ":/images/floor.png",
 		QString imagePathStompBG = ":/images/stompbg.png",
 		QString imagePathInfoBar = ":/images/infobar.png",
-        unsigned int marginStompBoxesTop = 175,
-        unsigned int marginStompBoxesBottom = 105,
-        unsigned int marginStompBoxesWidth = 40,
-        unsigned int panelBarOffset = 5,
+		unsigned int marginStompBoxesTop = 135,
+		unsigned int marginStompBoxesBottom = 72,
+		unsigned int marginStompBoxesWidth = 25,
+		unsigned int panelBarOffset = 10,
 		unsigned int borderWidth = 3,
-        QPoint pos = QPoint(0, 0));
+		QPoint pos = QPoint(0, 0));
 	~floorBoard();
 	QPoint getStompPos(int id);
-	editWindow* editDialog;
-  editWindow* oldDialog;
-  QList<stompBox*> stompBoxes;
 
 public slots:
 	void setWidth(int dist);
@@ -58,7 +55,7 @@ public slots:
 	void updateStompBoxes();
 	void setEditDialog(editWindow* editDialog);
 	void menuButtonSignal();
-	virtual void updateSwap() {}
+	//void stompbox_button(bool value);
 
 signals:
 	void valueChanged(QString fxName, QString valueName, QString value);
@@ -81,55 +78,12 @@ signals:
 	void ns2_buttonSignal(bool value);
 	void fx1_buttonSignal(bool value);
 	void fx2_buttonSignal(bool value);
-    void fx1_autoriff_buttonSignal(bool value);
-    void fx2_autoriff_buttonSignal(bool value);
 	void reverb_buttonSignal(bool value);
 	void delay_buttonSignal(bool value);
 	void chorus_buttonSignal(bool value);
 	void sendreturn_buttonSignal(bool value);
 	void eq_buttonSignal(bool value);
 	void pedal_buttonSignal(bool value);
-	 void master_buttonSignal(bool value);
-    void system_buttonSignal(bool value);
-    void midi_buttonSignal(bool value);
-    void assign1_buttonSignal(bool value);
-    void assign2_buttonSignal(bool value);
-    void assign3_buttonSignal(bool value);
-    void assign4_buttonSignal(bool value);
-    void assign5_buttonSignal(bool value);
-    void assign6_buttonSignal(bool value);
-    void assign7_buttonSignal(bool value);
-    void assign8_buttonSignal(bool value);
-    void ch_mode_statusSignal(bool value);
-    void channel_A_statusSignal(bool value);
-    void channel_B_statusSignal(bool value);
-    void preamp1_statusSignal(bool value);
-    void preamp2_statusSignal(bool value);
-    void solo1_statusSignal(bool value);
-    void solo2_statusSignal(bool value);
-    void distortion_statusSignal(bool value);
-    void compressor_statusSignal(bool value);
-    void ns1_statusSignal(bool value);
-    void ns2_statusSignal(bool value);
-    void fx1_statusSignal(bool value);
-    void fx2_statusSignal(bool value);
-    void reverb_statusSignal(bool value);
-    void delay_statusSignal(bool value);
-    void chorus_statusSignal(bool value);
-    void sendreturn_statusSignal(bool value);
-    void eq_statusSignal(bool value);
-    void pedal_statusSignal(bool value);
-    void master_statusSignal(bool value);
-    void system_statusSignal(bool value);
-    void system_midi_statusSignal(bool value);
-    void assign1_statusSignal(bool value);
-    void assign2_statusSignal(bool value);
-    void assign3_statusSignal(bool value);
-    void assign4_statusSignal(bool value);
-    void assign5_statusSignal(bool value);
-    void assign6_statusSignal(bool value);
-    void assign7_statusSignal(bool value);
-    void assign8_statusSignal(bool value);
 		
 protected:
 	void paintEvent(QPaintEvent *event);
@@ -174,7 +128,10 @@ private:
 	QList<int> fx;
 	bool colapseState;
   QList<menuPage*> menuPages;
+	QList<stompBox*> stompBoxes;
 	QList<QString> stompNames;
+	editWindow* editDialog;
+	editWindow* oldDialog;
 };
 
 #endif // FLOORBOARD_H

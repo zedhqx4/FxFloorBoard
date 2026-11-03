@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2011 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag.
 ** All rights reserved.
 ** This file is part of "GT-10B Fx FloorBoard".
@@ -24,6 +24,7 @@
 #include "customGraphicEQGraph.h"
 //#include <QMessageBox>
 #include <QPainter>
+#include <QPainterPath>
 #include <QMouseEvent>
 
 customGraphicEQGraph::customGraphicEQGraph (QWidget *parent) : poly(13), m_iDragNode(-1)
@@ -211,7 +212,7 @@ unsigned short customGraphicEQGraph::Level (void) const
 void customGraphicEQGraph::paintEvent ( QPaintEvent *pPaintEvent )
 {
     QPixmap image = QPixmap(":images/EQ_graph.png");
-    QRectF target(0.0, 0.0, image.width()*95/100, image.height()*43/100);
+    QRectF target(0.0, 0.0, image.width()*85/100, image.height()*43/100);
     QRectF source(0.0, 0.0, image.width(), image.height());
 
     QPainter painter(this);
@@ -240,7 +241,7 @@ void customGraphicEQGraph::paintEvent ( QPaintEvent *pPaintEvent )
     int spacer = w/9;
     poly.putPoints(0, 13,
                    0,    h,
-                   4,    b1+lev,
+                   0,    b1+lev,
                    spacer*1, b2+lev,
                    spacer*2, b3+lev,
                    spacer*3, b4+lev,
@@ -251,21 +252,17 @@ void customGraphicEQGraph::paintEvent ( QPaintEvent *pPaintEvent )
                    spacer*8, b9+lev,
                    spacer*9, b10+lev,
                    w,    b10+lev,
-                   w-4,    h     );
+                   w,    h     );
 
     QPainterPath path;
     path.moveTo(poly.at(0));
     path.addPolygon(poly);
 
-    painter.setPen(Qt::black);
-    QPen pen;
-    pen.setWidth(2);
-    painter.setPen(pen);
-    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setPen(Qt::yellow);
     painter.setBrush(grad);
     painter.drawPath((path));
 
-    painter.setBrush(Qt::blue);
+    painter.setBrush(Qt::red);
     painter.drawRect(nodeRect(1));
     painter.drawRect(nodeRect(2));
     painter.drawRect(nodeRect(3));
@@ -318,7 +315,7 @@ void customGraphicEQGraph::mouseReleaseEvent ( QMouseEvent *pMouseEvent )
 QRect customGraphicEQGraph::nodeRect ( int iNode ) const
 {
     const QPoint& pos = poly.at(iNode);
-   return QRect(pos.x() - 4, pos.y() - 4, 8, 8);
+    return QRect(pos.x() - 10, pos.y() - 4, 20, 8);
 }
 
 
@@ -384,6 +381,7 @@ void customGraphicEQGraph::dragNode ( const QPoint& pos )
         break;
     case 8: // Band_8
         piLevel = &m_iBand_8;
+         break;
     case 9: // Band_9
         piLevel = &m_iBand_9;
         break;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -43,7 +43,6 @@ void stompbox_cs::updateSignal()
 	updateKnob2("00", "00", "47");
 	updateComboBox("00", "00", "41");
 	updateButton("00", "00", "40");
-	updateSwitch("00", "00", "40");
 };
 
 void stompbox_cs::setEditPages()

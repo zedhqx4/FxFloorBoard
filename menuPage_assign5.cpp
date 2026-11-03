@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag.
 ** All rights reserved.
-** This file is part of "GT-10 Fx FloorBoard".
+** This file is part of "GT-10B Fx FloorBoard".
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ menuPage_assign5::menuPage_assign5(QWidget *parent)
 
 void menuPage_assign5::updateSignal()
 {
-    updateSwitch("0B", "00", "60");
+
 };
 
 void menuPage_assign5::setEditPages()
@@ -85,7 +85,7 @@ void menuPage_assign5::setEditPages()
   editDetails()->page()->addStackField();
         editDetails()->page()->newStackField(1);
   editDetails()->page()->newGroupBox("Assign 5 Wave Pedal");
-        editDetails()->page()->addKnob(1, 0, 1, 1, "0B", "00", "6E", "normal","right", 120);// Wave Form Rate
+        editDetails()->page()->addKnob(1, 0, 1, 1, "0B", "00", "6E", "normal","right", 105);// Wave Form Rate
         editDetails()->page()->addComboBox(1, 1, 1, 1, "0B", "00", "6F");                    // Wave Form
         editDetails()->page()->addGroupBox(0, 0, 1, 1);
   editDetails()->page()->addStackField();
@@ -94,5 +94,6 @@ void menuPage_assign5::setEditPages()
         editDetails()->page()->addKnob(0, 0, 1, 1, "0C", "00", "20", "normal","right", 85);
         editDetails()->page()->addGroupBox(0, 0, 1, 1);
   editDetails()->page()->addStackField();
-  editDetails()->page()->newStackField(0);editDetails()->page()->addStackField();
+
+
 };

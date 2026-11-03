@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag.
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -21,7 +21,7 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QtGui>
 #include <QFile>
 #include "summaryDialog.h"
 #include "Preferences.h"
@@ -450,7 +450,7 @@ summaryDialog::summaryDialog(QWidget *parent)
   connect(saveAsButton, SIGNAL(clicked()), this, SLOT(saveAs()));
   saveAsButton->setWhatsThis(tr("Will save the current dialog page to file in a *.txt format."));
   
-  viewButton = new QPushButton(tr("view Expanded Summary"));
+  QPushButton *viewButton = new QPushButton(tr("Change View"));
   connect(viewButton, SIGNAL(clicked()), this, SLOT(view()));
   viewButton->setWhatsThis(tr("Will Expand the summary dialog to include all patch parameters."));
   
@@ -481,68 +481,43 @@ summaryDialog::summaryDialog(QWidget *parent)
 
 void summaryDialog::makeList()
 {
-   // construct a text string using address and locator parameters to read from midi.xml
+    // construct a text string using address and locator parameters to read from midi.xml
     SysxIO *sysxIO = SysxIO::Instance();
     MidiTable *midiTable = MidiTable::Instance();
-    QString assign_desc;
-    QString assign_customdesc;
     for(int i=start;i<finish;i++ )  //start and finish range defined above.
-    {
+      {
         QString temp;
         QString pos = QString::number(i, 16).toUpper();
         if(pos.size()<2){ pos.prepend("0"); };
-        QString txt = midiTable->getMidiMap("Structure", address, "00", pos).customdesc;  //trawl through midi.xml
+        QString txt = midiTable->getMidiMap("Structure", address, "00", pos).customdesc;  //trawl through midi.xml 
         if(!txt.isEmpty() && txt != "") // skip the empty midi.xml .desc section and move to the next.
         {
-            QString pretxt =  midiTable->getMidiMap("Structure", address, "00", pos).desc;
-            int value = sysxIO->getSourceValue("Structure", address, "00", pos);
-            QString valueHex = QString::number(value, 16).toUpper();
-            if(valueHex.length() < 2) {valueHex.prepend("0"); };
-            temp.append("<br>");
-            temp.append("[");
-            if(!pretxt.isEmpty() && txt != "") { temp.append(pretxt + " "); };
-            temp.append(txt);
-            temp.append("] = ");
-            QString x;
-            if(pretxt.contains("Assign") && (txt.contains("Target")) )
-            {
-                bool ok;
-                temp.append(midiTable->getValue("Structure", address, "00", pos, valueHex));
-                int maxRange = QString("7F").toInt(&ok, 16) + 1;
-                value = valueHex.toInt(&ok, 16);
-                int dif = value/maxRange;
-                QString valueHex1 = QString::number(dif, 16).toUpper();
-                if(valueHex1.length() < 2) valueHex1.prepend("0");
-                QString valueHex2 = QString::number(value - (dif * maxRange), 16).toUpper();
-                if(valueHex2.length() < 2) valueHex2.prepend("0");
-                QString hex4 = valueHex1;
-                QString hex5 = valueHex2;
-                Midi items = midiTable->getMidiMap("Structure", "0B", "00", "21", hex4, hex5);
-                assign_desc = items.desc;
-                assign_customdesc = items.customdesc;
-            } else if(pretxt.contains("Assign") && ((txt.contains("Min") || txt.contains("Max"))))
-            {
-                temp.append(midiTable->getValue("Structure", assign_desc, "00", assign_customdesc, valueHex));
-            } else {
-                temp.append(midiTable->getValue("Structure", address, "00", pos, valueHex));
-            };
-            text2.append(temp);
-
-            if (this->filter != "off")
-            {
-                if (pretxt == this->filter) { text.append(temp); };
-            } else if(!pretxt.contains("Custom:")){text.append(temp); };
-            if(i == start && x == "On") { this->effect = "on"; }; // first byte is usually the effect on/off switch
-            if((pretxt == "FX1:" || pretxt == "FX2:") && (txt == "Type"))
-            {this->filter = midiTable->getMidiMap("Structure", address, "00", pos, valueHex).desc;};
+        QString pretxt =  midiTable->getMidiMap("Structure", address, "00", pos).desc;
+        int value = sysxIO->getSourceValue("Structure", address, "00", pos);
+        QString valueHex = QString::number(value, 16).toUpper();
+        if(valueHex.length() < 2) {valueHex.prepend("0"); };
+         temp.append("<br>");
+         temp.append("[");
+         if(!pretxt.isEmpty() && txt != "") { temp.append(pretxt + " "); };
+         temp.append(txt);
+         temp.append("] = ");
+         QString x = midiTable->getValue("Structure", address, "00", pos, valueHex);
+         {temp.append(x); };
+         text2.append(temp);        
+         
+          if (this->filter != "off") 
+          {
+            if (pretxt == this->filter) { text.append(temp); };
+          } else if(!pretxt.contains("Custom:")){text.append(temp); };
+          if(i == start && x == "On") { this->effect = "on"; }; // first byte is usually the effect on/off switch
+         if((pretxt == "FX1:" || pretxt == "FX2:") && (txt == "Type"))
+          {this->filter = midiTable->getMidiMap("Structure", address, "00", pos, valueHex).desc;};
         };
-    };
+      };
 };
 
 summaryDialog::~summaryDialog()
-{
-    this->deleteLater();
-};
+{};
 
 void summaryDialog::view()
 {
@@ -550,13 +525,11 @@ void summaryDialog::view()
   {
     textDialog->setText(large_text);
     this->mode = "Expanded";
-     viewButton->setText("view Compact Summary");
   } 
   else 
   {
     textDialog->setText(small_text);
     this->mode = "Compact";
-    viewButton->setText("view Expanded Summary");
   };
 };
 

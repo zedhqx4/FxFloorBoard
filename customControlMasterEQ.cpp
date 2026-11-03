@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
-** This file is part of "GT-10 Fx FloorBoard".
+** This file is part of "GT-10B Fx FloorBoard".
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -20,6 +20,11 @@
 ** 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 **
 ****************************************************************************/
+
+#include <QtGlobal>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <QtWidgets>
+#endif
 
 #include "customControlMasterEQ.h"
 #include "MidiTable.h"
@@ -240,7 +245,7 @@ customControlMasterEQ::customControlMasterEQ(QWidget *parent,
     QObject::connect(this, SIGNAL( graphUpdateSignal(QString, QString, QString, QString, QString, QString) ),
                      this->frame, SLOT( updateSlot(QString, QString, QString, QString, QString, QString) ));
 
-    /*QObject::connect(this->frame, SIGNAL(LowGainChanged(unsigned short)),
+    QObject::connect(this->frame, SIGNAL(LowGainChanged(unsigned short)),
                      this, SLOT(LowGainChanged(unsigned short) ));
 
     QObject::connect(this->frame, SIGNAL(MidFreqChanged(unsigned short)),
@@ -256,8 +261,8 @@ customControlMasterEQ::customControlMasterEQ(QWidget *parent,
                      this, SLOT(HighGainChanged(unsigned short) ));
 
     QObject::connect(this->frame, SIGNAL(LevelChanged(unsigned short)),
-                     this, SLOT(LevelChanged(unsigned short) ));        */
-}
+                     this, SLOT(LevelChanged(unsigned short) ));
+};
 
 
 void customControlMasterEQ::paintEvent(QPaintEvent *)
@@ -272,7 +277,7 @@ void customControlMasterEQ::paintEvent(QPaintEvent *)
 	painter.drawPixmap(target, image, source);*/
 
 
-}
+};
 
 void customControlMasterEQ::dialogUpdateSignal()
 {
@@ -330,8 +335,8 @@ void customControlMasterEQ::dialogUpdateSignal()
     valueStr = midiTable->getValue(this->area, hex1, hex2, hex_6, valueHex);
     emit updateDisplay_6(valueStr);
 
-    emit graphUpdateSignal( data_1, data_4, data_3, data_2, data_5, data_6);
-}
+    emit graphUpdateSignal( data_1, data_2, data_3, data_4, data_5, data_6);
+};
 
 void customControlMasterEQ::LowGainChanged(unsigned short iLowGain)
 {
@@ -340,7 +345,7 @@ void customControlMasterEQ::LowGainChanged(unsigned short iLowGain)
     SysxIO *sysxIO = SysxIO::Instance();
     sysxIO->setFileSource(this->area, hex1, hex2, hex_1, hex);
     emit dialogUpdateSignal();
-}
+};
 
 void customControlMasterEQ::MidFreqChanged(unsigned short iMidFreq)
 {
@@ -349,7 +354,7 @@ void customControlMasterEQ::MidFreqChanged(unsigned short iMidFreq)
     SysxIO *sysxIO = SysxIO::Instance();
     sysxIO->setFileSource(this->area, hex1, hex2, hex_2, hex);
     emit dialogUpdateSignal();
-}
+};
 
 void customControlMasterEQ::MidQChanged(unsigned short iMidQ)
 {
@@ -358,7 +363,7 @@ void customControlMasterEQ::MidQChanged(unsigned short iMidQ)
     SysxIO *sysxIO = SysxIO::Instance();
     sysxIO->setFileSource(this->area, hex1, hex2, hex_3, hex);
     emit dialogUpdateSignal();
-}
+};
 
 void customControlMasterEQ::MidGainChanged(unsigned short iMidGain)
 {
@@ -367,7 +372,7 @@ void customControlMasterEQ::MidGainChanged(unsigned short iMidGain)
     SysxIO *sysxIO = SysxIO::Instance();
     sysxIO->setFileSource(this->area, hex1, hex2, hex_4, hex);
     emit dialogUpdateSignal();
-}
+};
 
 void customControlMasterEQ::HighGainChanged(unsigned short iHighGain)
 {
@@ -376,7 +381,7 @@ void customControlMasterEQ::HighGainChanged(unsigned short iHighGain)
     SysxIO *sysxIO = SysxIO::Instance();
     sysxIO->setFileSource(this->area, hex1, hex2, hex_5, hex);
     emit dialogUpdateSignal();
-}
+};
 
 void customControlMasterEQ::LevelChanged(unsigned short iLevel)
 {
@@ -385,6 +390,6 @@ void customControlMasterEQ::LevelChanged(unsigned short iLevel)
     SysxIO *sysxIO = SysxIO::Instance();
     sysxIO->setFileSource(this->area, hex1, hex2, hex_6, hex);
     emit dialogUpdateSignal();
-}
+};
 
 

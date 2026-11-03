@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -43,7 +43,6 @@ void stompbox_ce::updateSignal()
 	updateKnob2("0A", "00", "23");
 	updateComboBox("0A", "00", "21");
 	updateButton("0A", "00", "20");
-	updateSwitch("0A", "00", "20");
 };
 
 void stompbox_ce::setEditPages()
@@ -54,9 +53,9 @@ void stompbox_ce::setEditPages()
 	editDetails()->page()->addGroupBox(0, 0, 2, 1);
 
 	editDetails()->page()->newGroupBox(tr("Chorus"));
-    editDetails()->page()->addKnob(0, 0, 1, 3, "0A", "00", "22", "normal","right", 120);
+	editDetails()->page()->addKnob(0, 0, 1, 3, "0A", "00", "22", "normal","right", 105);
 	editDetails()->page()->addKnob(1, 0, 1, 1, "0A", "00", "23");
-    editDetails()->page()->addKnob(1, 2, 1, 1, "0A", "00", "24", "normal","right", 63);
+	editDetails()->page()->addKnob(1, 2, 1, 1, "0A", "00", "24");
 	editDetails()->page()->addGroupBox(0, 1, 2, 1);
 
 	editDetails()->page()->newGroupBox(tr("Filter"));

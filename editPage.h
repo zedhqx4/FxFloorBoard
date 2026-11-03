@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
-** This file is part of "GT-10 Fx FloorBoard".
+** This file is part of "GT-10B Fx FloorBoard".
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -25,7 +25,12 @@
 #define EDITPAGE_H
 
 #include <QWidget>
+#include <QtGui>
+
+// Qt 5 split widget classes out of QtGui; retain Qt 4 compatibility.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QtWidgets>
+#endif
 
 class editPage : public QWidget
 {
@@ -93,12 +98,6 @@ public:
                      QString hex3 = "void",
                      QString direction = "bottom",
                      Qt::Alignment alignment = 0);
-    void addMultiComboBox(int row, int column, int rowSpan, int columnSpan,
-                          QString hex1 = "void",
-                          QString hex2 = "void",
-                          QString hex3 = "void",
-                          QString direction = "bottom",
-                          Qt::Alignment alignment = 0);
     void addNameEdit(int row, int column, int rowSpan, int columnSpan,
                      QString hex1 = "void",
                      QString hex2 = "void",

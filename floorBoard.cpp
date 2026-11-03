@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag.
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -805,13 +805,48 @@ void floorBoard::updateStompBoxes()
 
 void floorBoard::setEditDialog(editWindow* editDialog)
 {
-  this->oldDialog = this->editDialog;
+       QString styleSheet;
+#ifdef Q_OS_WIN
+        /* This set the floorboard default style to the "plastique" style,
+           as it comes the nearest what the stylesheet uses. */
+        //fxsBoard->setStyle(QStyleFactory::create("plastique"));
+                if(QFile(":qss/windows.qss").exists())
+                {
+                        QFile file(":qss/windows.qss");
+                        file.open(QFile::ReadOnly);
+                        styleSheet = QLatin1String(file.readAll());
+
+                };
+#endif
+
+#ifdef Q_WS_X11
+        fxsBoard->setStyle(QStyleFactory::create("plastique"));
+                if(QFile(":qss/linux.qss").exists())
+                {
+                        QFile file(":qss/linux.qss");
+                        file.open(QFile::ReadOnly);
+                        styleSheet = QLatin1String(file.readAll());
+                };
+#endif
+
+#ifdef Q_WS_MAC
+        fxsBoard->setStyle(QStyleFactory::create("plastique"));
+                if(QFile(":qss/macosx.qss").exists())
+                {
+                        QFile file(":qss/macosx.qss");
+                        file.open(QFile::ReadOnly);
+                        styleSheet = QLatin1String(file.readAll());
+                };
+#endif
+
+        this->oldDialog = this->editDialog;
 	this->editDialog = editDialog;
         this->editDialog->setParent(this);
         Preferences *preferences = Preferences::Instance();
          if(preferences->getPreferences("Window", "Single", "bool")!="true")
           {
             this->editDialog->setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
+            this->editDialog->setStyleSheet(styleSheet);
           };
         this->centerEditDialog();
 	this->editDialog->pageUpdateSignal();
@@ -837,39 +872,61 @@ void floorBoard::initMenuPages()
         /* MENU_PAGES */
         menuPage *system = new menuPage_system(this);
         system->setId(18);
+        system->setPos(QPoint(1224, 5));
 
-       menuPage *midi = new menuPage_midi(this);
-       midi->setId(19);
+        menuPage *midi = new menuPage_midi(this);
+        midi->setId(19);
+        midi->setPos(QPoint(1135, 5));
+        
+        int assignButtonVerticalPos = 84;
+	      int assignButtonHorizonalOffset = 479;
 	     menuPage *assign8 = new menuPage_assign8(this);
 	     assign8->setId(28);
+	     assign8->setPos(QPoint(assignButtonHorizonalOffset + 640, assignButtonVerticalPos));
 	     menuPage *assign7 = new menuPage_assign7(this);
 	     assign7->setId(27);
+	     assign7->setPos(QPoint(assignButtonHorizonalOffset + 550, assignButtonVerticalPos));
 	     menuPage *assign6 = new menuPage_assign6(this);
 	     assign6->setId(26);
+	     assign6->setPos(QPoint(assignButtonHorizonalOffset + 460, assignButtonVerticalPos));
 	     menuPage *assign5 = new menuPage_assign5(this);
 	     assign5->setId(25);
+	     assign5->setPos(QPoint(assignButtonHorizonalOffset + 370, assignButtonVerticalPos));
 	     menuPage *assign4 = new menuPage_assign4(this);
 	     assign4->setId(24);
+	     assign4->setPos(QPoint(assignButtonHorizonalOffset + 280, assignButtonVerticalPos));
 	     menuPage *assign3 = new menuPage_assign3(this);
 	     assign3->setId(23);
+	     assign3->setPos(QPoint(assignButtonHorizonalOffset + 190, assignButtonVerticalPos));
 	     menuPage *assign2 = new menuPage_assign2(this);
 	     assign2->setId(22);
+	     assign2->setPos(QPoint(assignButtonHorizonalOffset + 100, assignButtonVerticalPos));
 	     menuPage *assign1 = new menuPage_assign1(this);
 	     assign1->setId(21);
+	     assign1->setPos(QPoint(assignButtonHorizonalOffset + 10, assignButtonVerticalPos));
+
         menuPage *master = new menuPage_master(this);
         master->setId(20);
+        master->setPos(QPoint(1046, 24));
+
         menuPage *autoriff = new menuPage_autoriff(this);
         autoriff->setId(29);
+        autoriff->setPos(QPoint(1135, 24));
+
         menuPage *autoriff_FX2 = new menuPage_autoriff_FX2(this);
         autoriff_FX2->setId(30);
+        autoriff_FX2->setPos(QPoint(1224, 24));
+
+        
+
         };
 
 void floorBoard::menuButtonSignal()
 {
    Preferences *preferences = Preferences::Instance();
      if(preferences->getPreferences("Window", "Single", "bool")=="true")
-    { this->oldDialog->hide(); 
-      this->editDialog->show();     };
+    { this->oldDialog->hide(); };
+   this->editDialog->show();
 };
 
 

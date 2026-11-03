@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -47,16 +47,13 @@ void stompbox_eq::updateSignal()
     updateSlider4("01", "00", "79");
     updateSlider5("01", "00", "7B");
     updateButton("01", "00", "70");
-    updateSwitch("01", "00", "70");
 };
 
 void stompbox_eq::setEditPages()
 {
     editDetails()->page()->newGroupBox("Effect", Qt::AlignTop | Qt::AlignHCenter);
-  editDetails()->page()->addSwitch(0, 0, 1, 1, "01", "00", "70", "middle", Qt::AlignCenter);
-  editDetails()->page()->addParaEQ(0, 1, 2, 4, "01", "00", "71");
-  editDetails()->page()->addGroupBox(0, 0, 2, 4);
-
-	editDetails()->addPage();
-
+    editDetails()->page()->addSwitch(0, 0, 1, 1, "01", "00", "70", "middle", Qt::AlignCenter);
+    editDetails()->page()->addParaEQ(0, 1, 2, 4, "01", "00", "71");
+    editDetails()->page()->addGroupBox(0, 0, 2, 4);
+    editDetails()->addPage();
 };

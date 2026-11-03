@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -82,6 +82,7 @@ public:
 	QString getCurrentPatchName();
 	void sendMidi(QString midiMsg);
 	void sendSysx(QString sysxMsg);
+	void sendPatchWriteAndVerify(QString sysxMsg, int bank, int patch);
 	void requestPatchName(int bank, int patch);
 	void requestPatch(int bank, int patch);
 	void requestPatchChange(int bank, int patch);
@@ -115,9 +116,12 @@ private slots:
 	void resetDevice(QString sysxMsg);
 	void checkPatchChange(QString name);
 	void systemReply(QString replyMsg);
+	void verifyPatchBufferReply(QString replyMsg);
 
 signals:
 	void sysxReply(QString sysxMsg);
+	void patchMemoryWriteVerified(bool verified);
+	void patchBufferWriteVerified(bool verified);
 	void patchName(QString name);
 	void isFinished();
 	void isChanged();
@@ -164,6 +168,14 @@ private:
 	QString xml_area;
 	QString errorType;
 	QString errorMsg;
+	bool verifyBufferReadback;
+	QString pendingBufferExpectedData;
+	bool verifySystemReadback;
+	QString pendingSystemExpectedData;
+	bool verifyPermanentPatchReadback;
+	QString pendingPermanentPatchExpectedData;
+	int pendingPermanentPatchBank;
+	int pendingPermanentPatch;
 };
 
 #endif // SYSXIO_H

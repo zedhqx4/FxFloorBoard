@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -42,7 +42,7 @@ void menuPage_master::setEditPages()
   
 	editDetails()->page()->newGroupBox("Master");
    editDetails()->page()->addMasterEQ(0, 1, 2, 4, "0A", "00", "60");
-  /*  editDetails()->page()->addKnob(0, 0, 1, 1, "0A", "00", "61");                        // master low
+    /*editDetails()->page()->addKnob(0, 0, 1, 1, "0A", "00", "61");                        // master low
     editDetails()->page()->addKnob(0, 1, 1, 1, "0A", "00", "62");                        // master mid gain
     editDetails()->page()->addKnob(1, 1, 1, 1, "0A", "00", "63");                        // master mid Q
     editDetails()->page()->addKnob(2, 1, 1, 1, "0A", "00", "64");                        // master mid freq

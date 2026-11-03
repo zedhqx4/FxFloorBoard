@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag.
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -20,6 +20,11 @@
 ** 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 **
 ****************************************************************************/
+
+#include <QtGlobal>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <QtWidgets>
+#endif
 
 #include "customControlRange.h"
 #include "MidiTable.h"
@@ -56,7 +61,7 @@ customControlRange::customControlRange(QWidget *parent,
     this->knobMin = new customKnobRange(this, this->area, hex1, hex2, this->hexMin, this->hexMax, "Min");
     this->displayMin->setObjectName("editdisplay");
     this->displayMin->setFixedWidth(45);
-    this->displayMin->setFixedHeight(15);
+    this->displayMin->setFixedHeight(13);
     this->displayMin->setAlignment(Qt::AlignCenter);
     this->displayMin->setDisabled(true);
 
@@ -66,7 +71,7 @@ customControlRange::customControlRange(QWidget *parent,
     this->knobMax = new customKnobRange(this, this->area, hex1, hex2, this->hexMin, this->hexMax, "Max");
     this->displayMax->setObjectName("editdisplay");
     this->displayMax->setFixedWidth(45);
-    this->displayMax->setFixedHeight(15);
+    this->displayMax->setFixedHeight(13);
     this->displayMax->setAlignment(Qt::AlignCenter);
     this->displayMax->setDisabled(true);
 
@@ -96,8 +101,8 @@ customControlRange::customControlRange(QWidget *parent,
     mainLayout->addStretch(0);
 
     this->setLayout(mainLayout);
-    this->setFixedHeight(this->knobMin->height() + 15 + 12);
-    this->setFixedHeight(this->knobMax->height() + 15 + 12);
+    this->setFixedHeight(this->knobMin->height() + 13 + 12);
+    this->setFixedHeight(this->knobMax->height() + 13 + 12);
 
 
 

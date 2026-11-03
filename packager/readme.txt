@@ -1,21 +1,41 @@
 
-GT-10FxFloorBoard Copyright (C) 2007~2014 Colin Willcocks (gumtownbassman@yahoo.com).
+GT-10FxFloorBoard Copyright (C) 2007~2010 Colin Willcocks (gumtownbassman@yahoo.com).
  All rights reserved.
 =======
 
 
-GT-10FxFloorBoard version 20140830: 30 Aug 2014*****************************************************
+GT-10FxFloorBoard version 20100720: 20 July 2010
+*****************************************************
 PLEASE FEEL FREE TO DONATE, YOU MAY FREELY USE THIS SOFTWARE, 
- JUST KEEP IN MIND THE 1000's OF HOURS SPENT GETTING IT HERE,
+ JUST KEEP IN MIND THE 7000 HOURS SPENT OVER 4 YEARS GETTING IT HERE,
   I WOULD LOVE A BEER!!!. :-)
-
+but then patches created by you for sharing with all would be nice too.
+you can email patches and custom system settings saved files to the above address.
 ***********************************************************************************
-*
  ********* LATEST FEATURES ADDED****************************************************
- Updated Qt framework to 5.1 + minor bug fixes.
- Redesign of Midi I/O structure. 
- Total re-design of GUI interface and new features and bug fixes.
- Midi Program Table editing added.
+ *Added more Text Summary Dialog features. 
+ *Separate Assign edit-pages for Bulk Patch editing of individual Assigns. 
+ *Bulk Patch Editing - One effect change can be applied to a series of patches in one operation. 
+ *Whats This Help dialog added, with the press of the [F1] button. 
+ *Auditioning of Patches within Bulk Files, high-lighted file is sent to the GT-10 for instant auditioning before loading. 
+ *Temp Clipboard copied events are saved to file and are re-loaded on FxFloorbOard startup. 
+ *Text Dialog for Printing or Saving to File complete patch settings list.
+ *New Framework with better Windows 7 and Mac Snow Leopard support, auto temp buffer request on connect. 
+ *Multi Language support for French, German, and Chinese. 
+ *Bulk File save/restore in 3 formats *.gxg, *.mid & *.syx so your Boss Librarian can use the Bulk files 
+        and the FxFloorBoard can load in Bulk backups of patches, system and Global data. 
+ *The editor now supports using Boss Librarian *.gxg files.
+ *ClipBoard buttons have been added to the main page selectin bar (below) and can copy up to
+        5 opened patches for quick comparison. 
+ *The editpages have 5 patch pertial paste buttons added, where the single effect part only part is copyed from
+        the associated clipBoard and replaces the current settings for that one effect only.
+
+********** USEFUL INFORMATION *************
+* version 20100720 fixed bulk *.gxg file save bug.
+* version 20100702 The Bulk Patch Editing function should be used with caution 
+* as it can't be undone, and a Bulk Patch Backup is recommended before using it.
+* 
+* version 20100611 fixed patch write bug - stopped popup error dialog when there was no error. 
 
 ********* FIRST USE CONNECTION HINTS ************** 
  
@@ -47,8 +67,9 @@ then press the "write/sync" button.
 * and the midi channel is set to "1".*************************************************************************
 
 GT10-FxFloorBoard: 
-NOTE: THIS IS AN UNPAID PROJECT, SO FAR INVESTING OVER 7000 HOURS OF MY TIME OVER 5 YEARS, 
-also I WILL NOT ACCEPT LIABILITY FOR ANY DATA LOSS, even though TO THE BEST OF MY KNOWLEDGE EVERYTHING SHOULD WORK CORRECTLY. 
+NOTE: THIS IS AN UNPAID PROJECT, SO FAR INVESTING OVER 6000 HOURS OF MY TIME OVER 3 YEARS, 
+I WILL NOT ACCEPT LIABILITY FOR ANY DATA LOSS, TO THE BEST OF MY KNOWLEDGE EVERYTHING SHOULD WORK CORRECTLY, 
+BUT SOME FUNCTIONS MAY BE INCORRECT. 
 
 files can be saved/loaded as syx or mid (SMF) or gxg (Librarian) formats.
 the GT-10FxFloorBoard will also open GT10B *.gxb & *.mid files, and translate GT-8 patch files (*.syx single patch type).
@@ -128,7 +149,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 LEGAL:
 ------
 
-GT10 FxFloorBoard Copyright (C)2007~2014 Colin Willcocks <gumtownbassman@yahoo.com>.
+GT10 FxFloorBoard Copyright (C)2007~2010 Colin Willcocks <gumtownbassman@yahoo.com>.
 based on the GT8 FxFloorBoard Copyright (C)2005~2007 Uco Mesdag.
 
 Windows(TM), Windows 95(TM), Windows 98(TM), Windows ME(TM), Windows NT(TM), 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -45,7 +45,7 @@ public:
 		QString hex3 = "void",
 		QString type = "Min",
 		QString imagePath = ":/images/stompknob.png",
-                unsigned int imageRange = 100);
+		unsigned int imageRange = 62);
 	void setValue(int value);
 	
 public slots:

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -20,6 +20,11 @@
 ** 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 **
 ****************************************************************************/
+
+#include <QtGlobal>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <QtWidgets>
+#endif
 
 #include "customControlKnob.h"
 #include "MidiTable.h"
@@ -49,7 +54,7 @@ customControlKnob::customControlKnob(QWidget *parent,
 
 	this->display->setObjectName("editdisplay");
 	this->display->setFixedWidth(lenght);
-	this->display->setFixedHeight(15);
+	this->display->setFixedHeight(13);
 	this->display->setAlignment(Qt::AlignCenter);
 	this->display->setDisabled(true);
 
@@ -99,7 +104,7 @@ customControlKnob::customControlKnob(QWidget *parent,
 		mainLayout->addStretch(0);
 
 		this->setLayout(mainLayout);
-		this->setFixedHeight(this->knob->height() + 15 + 12);
+		this->setFixedHeight(this->knob->height() + 13 + 12);
 		
 	}
   else if(direction == "System")
@@ -116,7 +121,7 @@ customControlKnob::customControlKnob(QWidget *parent,
 		mainLayout->addStretch(0);
 
 		this->setLayout(mainLayout);
-		this->setFixedHeight(this->knob->height() + 15 + 12);
+		this->setFixedHeight(this->knob->height() + 13 + 12);
 		//this->area = "System";
 	};
 

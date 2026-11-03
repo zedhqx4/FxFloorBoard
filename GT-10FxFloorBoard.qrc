@@ -82,7 +82,6 @@
         <file>language_ch.qm</file>
         <file>license.txt</file>
         <file>midi.xml</file>
-        <file>midi.xsd</file>
         <file>preferences.xml.dist</file>
         <file>qss/linux.qss</file>
         <file>qss/macosx.qss</file>
@@ -90,6 +89,5 @@
         <file>system.syx</file>
         <file>images/EQ_graph.png</file>
         <file>images/meshWindow.png</file>
-        <file>images/solo_switch.png</file>
     </qresource>
 </RCC>

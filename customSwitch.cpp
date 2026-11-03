@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -21,7 +21,8 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QtGui>
+#include <QApplication>
 #include "customSwitch.h"
 
 customSwitch::customSwitch(bool active, QWidget *parent, QString hex1, QString hex2, QString hex3,
@@ -92,9 +93,8 @@ void customSwitch::emitValue(bool value)
     this->active = value;
 	if (value != m_value) {
         this->m_value = value;
-
-    };
         emit valueChanged((bool)value, this->hex1, this->hex2, this->hex3);
+    };
 };
 
 void customSwitch::mouseMoveEvent(QMouseEvent *event)

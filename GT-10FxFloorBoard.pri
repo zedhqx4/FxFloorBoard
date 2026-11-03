@@ -1,6 +1,6 @@
 #############################################################################
 ##
-## Copyright (C) 2007~2014 Colin Willcocks.
+## Copyright (C) 2007~2010 Colin Willcocks.
 ## Copyright (C) 2005~2007 Uco Mesdag. 
 ## All rights reserved.
 ##
@@ -39,7 +39,6 @@ HEADERS += ./editPage.h \
     ./customControlRange.h \
     ./customControlLabel.h \
     ./customControlMasterEQ.h \
-    ./customControlMidiTable.h \
     ./customControlListMenu.h \
     ./customControlSwitch.h \
     ./customControlTarget.h \
@@ -53,8 +52,6 @@ HEADERS += ./editPage.h \
     ./customLabelDisplay.h \
     ./customLed.h \
     ./customMasterEQGraph.h \
-    ./customMultiComboBox.h \
-    ./customPanelButton.h \
     ./customRangeDial.h \
     ./customRenameDialog.h \
     ./customRenameWidget.h \
@@ -108,9 +105,9 @@ HEADERS += ./editPage.h \
     ./stompbox_pdl.h \
     ./stompbox_rv.h \
     ./midiIO.h \
-    ./midiIODestroyer.h \
     ./MidiTable.h \
     ./MidiTableDestroyer.h \
+    ./RtError.h \
     ./RtMidi.h \
     ./summaryDialog.h \
     ./summaryDialogPatchList.h \
@@ -142,7 +139,6 @@ SOURCES += ./editPage.cpp \
     ./customControlLabel.cpp \
     ./customControlListMenu.cpp \
     ./customControlMasterEQ.cpp \
-    ./customControlMidiTable.cpp \
     ./customControlRange.cpp \
     ./customControlSwitch.cpp \
     ./customControlTarget.cpp \
@@ -156,8 +152,6 @@ SOURCES += ./editPage.cpp \
     ./customLabelDisplay.cpp \
     ./customLed.cpp \
     ./customMasterEQGraph.cpp \
-    ./customMultiComboBox.cpp \
-    ./customPanelButton.cpp \
     ./customRangeDial.cpp \
     ./customRenameDialog.cpp \
     ./customRenameWidget.cpp \
@@ -189,7 +183,6 @@ SOURCES += ./editPage.cpp \
     ./menuPage_system.cpp \
     ./renameDialog.cpp \
     ./renameWidget.cpp \
-    ./RtMidi.cpp \
     ./statusBarSymbol.cpp \
     ./statusBarWidget.cpp \
     ./stompBox.cpp \
@@ -215,7 +208,6 @@ SOURCES += ./editPage.cpp \
     ./summaryDialogPatchList.cpp \
     ./summaryDialogSystem.cpp \
     ./midiIO.cpp \
-    ./midiIODestroyer.cpp \
     ./MidiTable.cpp \
     ./MidiTableDestroyer.cpp \
     ./Preferences.cpp \

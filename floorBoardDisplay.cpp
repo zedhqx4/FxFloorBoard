@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag.
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -21,6 +21,7 @@
 **
 ****************************************************************************/
 
+#include <QApplication>
 #include <QChar>
 #include "floorBoardDisplay.h"
 #include "Preferences.h"
@@ -53,9 +54,10 @@ floorBoardDisplay::floorBoardDisplay(QWidget *parent, QPoint pos)
         this->blinkCount = 0;
 
         int patchDisplayRowOffset = 5;
-        int editButtonRowOffset = 60;
-        int tempRowOffset = 580;
-        int bottomOffset = 635;
+        int editButtonRowOffset = 45;
+        int assignButtonRowOffset = 83;
+        int tempRowOffset = 499;
+        int bottomOffset = 544;
         this->patchNumDisplay = new customDisplay(QRect(10, patchDisplayRowOffset, 50, 34), this);
         this->patchNumDisplay->setLabelPosition(true);
         this->patchNumDisplay->setMainObjectName("bankMain");
@@ -68,27 +70,27 @@ floorBoardDisplay::floorBoardDisplay(QWidget *parent, QPoint pos)
         this->valueDisplay->setMainObjectName("valueMain");
         this->valueDisplay->setSubObjectName("valueSub");
 
-        this->temp1Display = new customLabelDisplay(QRect(55, tempRowOffset+20, 170, 18), this);
+        this->temp1Display = new customLabelDisplay(QRect(10, tempRowOffset+17, 170, 18), this);
         this->temp1Display->setLabelPosition(true);
         this->temp1Display->setMainObjectName("nameMain");
         this->temp1Display->setMainText(tr("Empty"), Qt::AlignCenter);
         this->temp1Display->setWhatsThis(tr("Name of the currently stored patch in the clipboard."));
-        this->temp2Display = new customLabelDisplay(QRect(255, tempRowOffset+20, 170, 18), this);
+        this->temp2Display = new customLabelDisplay(QRect(190, tempRowOffset+17, 170, 18), this);
         this->temp2Display->setLabelPosition(true);
         this->temp2Display->setMainObjectName("nameMain");
         this->temp2Display->setMainText(tr("Empty"), Qt::AlignCenter);
         this->temp2Display->setWhatsThis(tr("Name of the currently stored patch in the clipboard."));
-        this->temp3Display = new customLabelDisplay(QRect(455, tempRowOffset+20, 170, 18), this);
+        this->temp3Display = new customLabelDisplay(QRect(370, tempRowOffset+17, 170, 18), this);
         this->temp3Display->setLabelPosition(true);
         this->temp3Display->setMainObjectName("nameMain");
         this->temp3Display->setMainText(tr("Empty"), Qt::AlignCenter);
         this->temp3Display->setWhatsThis(tr("Name of the currently stored patch in the clipboard."));
-        this->temp4Display = new customLabelDisplay(QRect(655, tempRowOffset+20, 170, 18), this);
+        this->temp4Display = new customLabelDisplay(QRect(550, tempRowOffset+17, 170, 18), this);
         this->temp4Display->setLabelPosition(true);
         this->temp4Display->setMainObjectName("nameMain");
         this->temp4Display->setMainText(tr("Empty"), Qt::AlignCenter);
         this->temp4Display->setWhatsThis(tr("Name of the currently stored patch in the clipboard."));
-        this->temp5Display = new customLabelDisplay(QRect(855, tempRowOffset+20, 170, 18), this);
+        this->temp5Display = new customLabelDisplay(QRect(730, tempRowOffset+17, 170, 18), this);
         this->temp5Display->setLabelPosition(true);
         this->temp5Display->setMainObjectName("nameMain");
         this->temp5Display->setMainText(tr("Empty"), Qt::AlignCenter);
@@ -105,108 +107,105 @@ floorBoardDisplay::floorBoardDisplay(QWidget *parent, QPoint pos)
   nameEdit->setGeometry(70, patchDisplayRowOffset, 150, 34);
   nameEdit->setWhatsThis(tr("Clicking on this will open<br>a text dialog window<br>allowing user text input."));
   customRenameWidget *userDialog = new customRenameWidget(this, "0E", "00", "00", "Structure", "20");
-  userDialog->setGeometry(728, patchDisplayRowOffset+5, 320, 25);
+  userDialog->setGeometry(728, editButtonRowOffset+5, 262, 25);
   userDialog->setWhatsThis(tr("Clicking on this will open<br>a text dialog window<br>allowing user text input."));
   customRenameWidget *patchDialog = new customRenameWidget(this, "0D", "00", "00", "Structure", "80");
-  patchDialog->setGeometry(50, bottomOffset, 980, 25);
+  patchDialog->setGeometry(10, bottomOffset, 980, 25);
   patchDialog->setWhatsThis(tr("Clicking on this will open<br>a text dialog window<br>allowing user text input."));
   this->output = new customControlListMenu(this, "00", "00", "11", "right");
-  output->setGeometry(580, patchDisplayRowOffset, 180, 30);
+  output->setGeometry(833, patchDisplayRowOffset, 160, 30);
   output->setWhatsThis(tr("This is the Patch Mode setting of Output Select<br>this is only active if the SYSTEM setting<br>is set to Patch Mode."));
   this->catagory = new customControlListMenu(this, "00", "00", "10", "right");
-  catagory->setGeometry(580, patchDisplayRowOffset+19, 300, 30);
+  catagory->setGeometry(833, patchDisplayRowOffset+19, 280, 30);
 
   this->connectButton = new customButton(tr("Connect"), false, QPoint(390, patchDisplayRowOffset), this, ":/images/greenledbutton.png");
   this->connectButton->setWhatsThis(tr("Connect Button<br>used to establish a continuous midi connection<br>when lit green, the connection is valid"));
   this->writeButton = new customButton(tr("Write/Sync"), false, QPoint(479, patchDisplayRowOffset), this, ":/images/ledbutton.png");
   this->writeButton->setWhatsThis(tr("Write/Sync Button<br>if the patch number displays [temp buffer]<br>the current patch is sent to the GT temporary memory only<br>or else the patch will be written to the displayed patch memory location."));
-  this->system_midi_Button = new customPanelButton(tr("Midi"), false, QPoint(1000, editButtonRowOffset+35), this, ":/images/switch.png");
+  //this->assign_Button = new customButton(tr("Assigns"), false, QPoint(584, patchDisplayRowOffset), this, ":/images/pushbutton.png");
+  //this->assign_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
+  this->system_midi_Button = new customButton(tr("System Midi"), false, QPoint(658, patchDisplayRowOffset), this, ":/images/pushbutton.png");
   this->system_midi_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->system_Button = new customPanelButton(tr("System"), false, QPoint(1000, editButtonRowOffset), this, ":/images/switch.png");
+  this->system_Button = new customButton(tr("System Settings"), false, QPoint(747, patchDisplayRowOffset), this, ":/images/pushbutton.png");
   this->system_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-
-  this->ch_mode_Button = new customPanelButton(tr("CH MODE"), false, QPoint(40, editButtonRowOffset), this, ":/images/switch.png");
-  this->ch_mode_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->channel_A_Button = new customPanelButton(tr("CH-A"), false, QPoint(90, editButtonRowOffset), this, ":/images/switch.png");
-  this->channel_A_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->channel_B_Button = new customPanelButton(tr("CH-B"), false, QPoint(90, editButtonRowOffset+35), this, ":/images/switch.png");
-  this->channel_B_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->preamp1_Button = new customPanelButton(tr("PREAMP-A"), false, QPoint(160, editButtonRowOffset), this, ":/images/switch.png");
-  this->preamp1_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->preamp2_Button = new customPanelButton(tr("PREAMP-B"), false, QPoint(160, editButtonRowOffset+35), this, ":/images/switch.png");
-  this->preamp2_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->solo1_Button = new customPanelButton(tr("SOLO-A"), false, QPoint(210, editButtonRowOffset), this, ":/images/solo_switch.png");
-  this->solo1_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->solo2_Button = new customPanelButton(tr("SOLO-B"), false, QPoint(210, editButtonRowOffset+35), this, ":/images/solo_switch.png");
-  this->solo2_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->compressor_Button = new customPanelButton(tr("Compressor"), false, QPoint(290,editButtonRowOffset), this, ":/images/switch.png");
-  this->compressor_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->distortion_Button = new customPanelButton(tr("Distortion"), false, QPoint(290,editButtonRowOffset+35), this, ":/images/switch.png");
-  this->distortion_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->ns1_Button = new customPanelButton(tr("NS-1"), false, QPoint(350, editButtonRowOffset), this, ":/images/switch.png");
-  this->ns1_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->ns2_Button = new customPanelButton(tr("NS-2"), false, QPoint(350, editButtonRowOffset+35), this, ":/images/switch.png");
-  this->ns2_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->fx1_Button = new customPanelButton(tr("FX-1"), false, QPoint(410, editButtonRowOffset), this, ":/images/switch.png");
-  this->fx1_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->fx2_Button = new customPanelButton(tr("FX-2"), false, QPoint(410, editButtonRowOffset+35), this, ":/images/switch.png");
-  this->fx2_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->fx1_autoriff_Button = new customPanelButton(tr("FX1 AutoRiff"), false, QPoint(470, editButtonRowOffset), this, ":/images/switch.png");
-  this->fx1_autoriff_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->fx2_autoriff_Button = new customPanelButton(tr("FX2 AutoRiff"), false, QPoint(470, editButtonRowOffset+35), this, ":/images/switch.png");
-  this->fx2_autoriff_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->sendreturn_Button = new customPanelButton(tr("Send/Return"), false, QPoint(530, editButtonRowOffset+35), this, ":/images/switch.png");
-  this->sendreturn_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->eq_Button = new customPanelButton(tr("Equalizer"), false, QPoint(590, editButtonRowOffset), this, ":/images/switch.png");
-  this->eq_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->chorus_Button = new customPanelButton(tr("Chorus"), false, QPoint(590, editButtonRowOffset+35), this, ":/images/switch.png");
-  this->chorus_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->reverb_Button = new customPanelButton(tr("Reverb"), false, QPoint(650, editButtonRowOffset), this, ":/images/switch.png");
-  this->reverb_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->delay_Button = new customPanelButton(tr("Delay"), false, QPoint(650, editButtonRowOffset+35), this, ":/images/switch.png");
-  this->delay_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->pedal_Button = new customPanelButton(tr("Pedal/FX"), false, QPoint(710, editButtonRowOffset), this, ":/images/switch.png");
-  this->pedal_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->master_Button = new customPanelButton(tr("Master"), false, QPoint(710, editButtonRowOffset+35), this, ":/images/switch.png");
+  this->master_Button = new customButton(tr("Master"), false, QPoint(569, patchDisplayRowOffset+19), this, ":/images/pushbutton.png");
   this->master_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
+  this->fx1_autoriff_Button = new customButton(tr("FX1 AutoRiff"), false, QPoint(659, patchDisplayRowOffset+19), this, ":/images/pushbutton.png");
+  this->fx1_autoriff_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
+  this->fx2_autoriff_Button = new customButton(tr("FX2 AutoRiff"), false, QPoint(747, patchDisplayRowOffset+19), this, ":/images/pushbutton.png");
+  this->fx2_autoriff_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
 
-  this->assign1_Button = new customPanelButton(tr("1"), false, QPoint(795, editButtonRowOffset), this, ":/images/switch.png");
+
+  this->ch_mode_Button = new customButton(tr("Channel Mode"), false, QPoint(10, editButtonRowOffset), this, ":/images/pushbutton.png");
+  this->ch_mode_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
+  this->preamp1_Button = new customButton(tr("PreAmp A"), false, QPoint(100, editButtonRowOffset), this, ":/images/pushbutton.png");
+  this->preamp1_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
+  this->preamp2_Button = new customButton(tr("PreAmp B"), false, QPoint(100, editButtonRowOffset+18), this, ":/images/pushbutton.png");
+  this->preamp2_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
+  this->distortion_Button = new customButton(tr("Distortion"), false, QPoint(190,editButtonRowOffset), this, ":/images/pushbutton.png");
+  this->distortion_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
+  this->compressor_Button = new customButton(tr("Compressor"), false, QPoint(190,editButtonRowOffset+18), this, ":/images/pushbutton.png");
+  this->compressor_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
+  this->ns1_Button = new customButton(tr("NS 1"), false, QPoint(280, editButtonRowOffset), this, ":/images/pushbutton.png");
+  this->ns1_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
+  this->ns2_Button = new customButton(tr("NS 2"), false, QPoint(280, editButtonRowOffset+18), this, ":/images/pushbutton.png");
+  this->ns2_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
+  this->fx1_Button = new customButton(tr("FX 1"), false, QPoint(370, editButtonRowOffset), this, ":/images/pushbutton.png");
+  this->fx1_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
+  this->fx2_Button = new customButton(tr("FX 2"), false, QPoint(370, editButtonRowOffset+18), this, ":/images/pushbutton.png");
+  this->fx2_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
+  this->reverb_Button = new customButton(tr("Reverb"), false, QPoint(460, editButtonRowOffset), this, ":/images/pushbutton.png");
+  this->reverb_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
+  this->delay_Button = new customButton(tr("Delay"), false, QPoint(460, editButtonRowOffset+18), this, ":/images/pushbutton.png");
+  this->delay_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
+  this->chorus_Button = new customButton(tr("Chorus"), false, QPoint(550, editButtonRowOffset), this, ":/images/pushbutton.png");
+  this->chorus_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
+  this->sendreturn_Button = new customButton(tr("Send/Return"), false, QPoint(550, editButtonRowOffset+18), this, ":/images/pushbutton.png");
+  this->sendreturn_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
+  this->eq_Button = new customButton(tr("Equalizer"), false, QPoint(640, editButtonRowOffset), this, ":/images/pushbutton.png");
+  this->eq_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
+  this->pedal_Button = new customButton(tr("Pedal/Wah"), false, QPoint(640, editButtonRowOffset+18), this, ":/images/pushbutton.png");
+  this->pedal_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
+
+  this->assign1_Button = new customButton(tr("Assign 1"), false, QPoint(10, assignButtonRowOffset), this, ":/images/pushbutton.png");
   this->assign1_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->assign2_Button = new customPanelButton(tr("2"), false, QPoint(840, editButtonRowOffset), this, ":/images/switch.png");
+  this->assign2_Button = new customButton(tr("Assign 2"), false, QPoint(100, assignButtonRowOffset), this, ":/images/pushbutton.png");
   this->assign2_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->assign3_Button = new customPanelButton(tr("3"), false, QPoint(885, editButtonRowOffset), this, ":/images/switch.png");
+  this->assign3_Button = new customButton(tr("Assign 3"), false, QPoint(190, assignButtonRowOffset), this, ":/images/pushbutton.png");
   this->assign3_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->assign4_Button = new customPanelButton(tr("4"), false, QPoint(930, editButtonRowOffset), this, ":/images/switch.png");
+  this->assign4_Button = new customButton(tr("Assign 4"), false, QPoint(280, assignButtonRowOffset), this, ":/images/pushbutton.png");
   this->assign4_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->assign5_Button = new customPanelButton(tr("5"), false, QPoint(795, editButtonRowOffset+35), this, ":/images/switch.png");
+  this->assign5_Button = new customButton(tr("Assign 5"), false, QPoint(370, assignButtonRowOffset), this, ":/images/pushbutton.png");
   this->assign5_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->assign6_Button = new customPanelButton(tr("6"), false, QPoint(840, editButtonRowOffset+35), this, ":/images/switch.png");
+  this->assign6_Button = new customButton(tr("Assign 6"), false, QPoint(460, assignButtonRowOffset), this, ":/images/pushbutton.png");
   this->assign6_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->assign7_Button = new customPanelButton(tr("7"), false, QPoint(885, editButtonRowOffset+35), this, ":/images/switch.png");
+  this->assign7_Button = new customButton(tr("Assign 7"), false, QPoint(550, assignButtonRowOffset), this, ":/images/pushbutton.png");
   this->assign7_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->assign8_Button = new customPanelButton(tr("8"), false, QPoint(930, editButtonRowOffset+35), this, ":/images/switch.png");
+  this->assign8_Button = new customButton(tr("Assign 8"), false, QPoint(640, assignButtonRowOffset), this, ":/images/pushbutton.png");
   this->assign8_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
 
-  this->temp1_copy_Button = new customButton(tr("Patch-1 Copy"), false, QPoint(55, tempRowOffset), this, ":/images/pushbutton.png");
+  this->temp1_copy_Button = new customButton(tr("Temp-1 Copy"), false, QPoint(10, tempRowOffset), this, ":/images/pushbutton.png");
   this->temp1_copy_Button->setWhatsThis(tr("Copy current patch to clipboard<br>pressing this button will save the current patch to a clipboard<br>the clipboard is saved to file and is re-loaded<br>on the next session startup."));
-  this->temp1_paste_Button = new customButton(tr("Patch-1 Paste"), false, QPoint(145, tempRowOffset), this, ":/images/pushbutton.png");
+  this->temp1_paste_Button = new customButton(tr("Temp-1 Paste"), false, QPoint(100, tempRowOffset), this, ":/images/pushbutton.png");
   this->temp1_paste_Button->setWhatsThis(tr("Paste current patch from clipboard<br>pressing this button will load the current patch to a clipboard<br>the clipboard is re-loaded<br>from the previous session copy."));
-  this->temp2_copy_Button = new customButton(tr("Patch-2 Copy"), false, QPoint(255, tempRowOffset), this, ":/images/pushbutton.png");
+  this->temp2_copy_Button = new customButton(tr("Temp-2 Copy"), false, QPoint(190, tempRowOffset), this, ":/images/pushbutton.png");
   this->temp2_copy_Button->setWhatsThis(tr("Copy current patch to clipboard<br>pressing this button will save the current patch to a clipboard<br>the clipboard is saved to file and is re-loaded<br>on the next session startup."));
-  this->temp2_paste_Button = new customButton(tr("Patch-2 Paste"), false, QPoint(345, tempRowOffset), this, ":/images/pushbutton.png");
+  this->temp2_paste_Button = new customButton(tr("Temp-2 Paste"), false, QPoint(280, tempRowOffset), this, ":/images/pushbutton.png");
   this->temp2_paste_Button->setWhatsThis(tr("Paste current patch from clipboard<br>pressing this button will load the current patch to a clipboard<br>the clipboard is re-loaded<br>from the previous session copy."));
-  this->temp3_copy_Button = new customButton(tr("Patch-3 Copy"), false, QPoint(455, tempRowOffset), this, ":/images/pushbutton.png");
+  this->temp3_copy_Button = new customButton(tr("Temp-3 Copy"), false, QPoint(370, tempRowOffset), this, ":/images/pushbutton.png");
   this->temp3_copy_Button->setWhatsThis(tr("Copy current patch to clipboard<br>pressing this button will save the current patch to a clipboard<br>the clipboard is saved to file and is re-loaded<br>on the next session startup."));
-  this->temp3_paste_Button = new customButton(tr("Patch-3 Paste"), false, QPoint(545, tempRowOffset), this, ":/images/pushbutton.png");
+  this->temp3_paste_Button = new customButton(tr("Temp-3 Paste"), false, QPoint(460, tempRowOffset), this, ":/images/pushbutton.png");
   this->temp3_paste_Button->setWhatsThis(tr("Paste current patch from clipboard<br>pressing this button will load the current patch to a clipboard<br>the clipboard is re-loaded<br>from the previous session copy."));
-  this->temp4_copy_Button = new customButton(tr("Patch-4 Copy"), false, QPoint(655, tempRowOffset), this, ":/images/pushbutton.png");
+  this->temp4_copy_Button = new customButton(tr("Temp-4 Copy"), false, QPoint(550, tempRowOffset), this, ":/images/pushbutton.png");
   this->temp4_copy_Button->setWhatsThis(tr("Copy current patch to clipboard<br>pressing this button will save the current patch to a clipboard<br>the clipboard is saved to file and is re-loaded<br>on the next session startup."));
-  this->temp4_paste_Button = new customButton(tr("Patch-4 Paste"), false, QPoint(745, tempRowOffset), this, ":/images/pushbutton.png");
+  this->temp4_paste_Button = new customButton(tr("Temp-4 Paste"), false, QPoint(640, tempRowOffset), this, ":/images/pushbutton.png");
   this->temp4_paste_Button->setWhatsThis(tr("Paste current patch from clipboard<br>pressing this button will load the current patch to a clipboard<br>the clipboard is re-loaded<br>from the previous session copy."));
-  this->temp5_copy_Button = new customButton(tr("Patch-5 Copy"), false, QPoint(855, tempRowOffset), this, ":/images/pushbutton.png");
+  this->temp5_copy_Button = new customButton(tr("Temp-5 Copy"), false, QPoint(730, tempRowOffset), this, ":/images/pushbutton.png");
   this->temp5_copy_Button->setWhatsThis(tr("Copy current patch to clipboard<br>pressing this button will save the current patch to a clipboard<br>the clipboard is saved to file and is re-loaded<br>on the next session startup."));
-  this->temp5_paste_Button = new customButton(tr("Patch-5 Paste"), false, QPoint(945, tempRowOffset), this, ":/images/pushbutton.png");
+  this->temp5_paste_Button = new customButton(tr("Temp-5 Paste"), false, QPoint(820, tempRowOffset), this, ":/images/pushbutton.png");
   this->temp5_paste_Button->setWhatsThis(tr("Paste current patch from clipboard<br>pressing this button will load the current patch to a clipboard<br>the clipboard is re-loaded<br>from the previous session copy."));
+  //this->temp6_copy_Button = new customButton(tr("Future feature"), false, QPoint(910, tempRowOffset), this, ":/images/pushbutton.png");
+        //this->temp6_paste_Button = new customButton(tr("Future feature"), false, QPoint(910, tempRowOffset+19), this, ":/images/pushbutton.png");
 
         SysxIO *sysxIO = SysxIO::Instance();
         QObject::connect(this, SIGNAL(setStatusSymbol(int)), sysxIO, SIGNAL(setStatusSymbol(int)));
@@ -223,68 +222,20 @@ floorBoardDisplay::floorBoardDisplay(QWidget *parent, QPoint pos)
         QObject::connect(this->writeButton, SIGNAL(valueChanged(bool)), this, SLOT(writeSignal(bool)));
 
         QObject::connect(this->ch_mode_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(ch_mode_buttonSignal(bool)));
-        QObject::connect(this->channel_A_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(ch_mode_buttonSignal(bool)));
-        QObject::connect(this->channel_B_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(ch_mode_buttonSignal(bool)));
         QObject::connect(this->preamp1_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(preamp1_buttonSignal(bool)));
         QObject::connect(this->preamp2_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(preamp2_buttonSignal(bool)));
-        QObject::connect(this->solo1_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(preamp1_buttonSignal(bool)));
-        QObject::connect(this->solo2_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(preamp2_buttonSignal(bool)));
         QObject::connect(this->distortion_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(distortion_buttonSignal(bool)));
         QObject::connect(this->compressor_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(compressor_buttonSignal(bool)));
         QObject::connect(this->ns1_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(ns1_buttonSignal(bool)));
         QObject::connect(this->ns2_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(ns2_buttonSignal(bool)));
         QObject::connect(this->fx1_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(fx1_buttonSignal(bool)));
         QObject::connect(this->fx2_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(fx2_buttonSignal(bool)));
-        QObject::connect(this->fx1_autoriff_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(fx1_autoriff_buttonSignal(bool)));
-        QObject::connect(this->fx2_autoriff_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(fx2_autoriff_buttonSignal(bool)));
         QObject::connect(this->reverb_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(reverb_buttonSignal(bool)));
         QObject::connect(this->delay_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(delay_buttonSignal(bool)));
         QObject::connect(this->chorus_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(chorus_buttonSignal(bool)));
         QObject::connect(this->sendreturn_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(sendreturn_buttonSignal(bool)));
         QObject::connect(this->eq_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(eq_buttonSignal(bool)));
         QObject::connect(this->pedal_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(pedal_buttonSignal(bool)));
-        QObject::connect(this->master_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(master_buttonSignal(bool)));
-    QObject::connect(this->system_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(system_buttonSignal(bool)));
-    QObject::connect(this->system_midi_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(midi_buttonSignal(bool)));
-    QObject::connect(this->assign1_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(assign1_buttonSignal(bool)));
-    QObject::connect(this->assign2_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(assign2_buttonSignal(bool)));
-    QObject::connect(this->assign3_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(assign3_buttonSignal(bool)));
-    QObject::connect(this->assign4_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(assign4_buttonSignal(bool)));
-    QObject::connect(this->assign5_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(assign5_buttonSignal(bool)));
-    QObject::connect(this->assign6_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(assign6_buttonSignal(bool)));
-    QObject::connect(this->assign7_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(assign7_buttonSignal(bool)));
-    QObject::connect(this->assign8_Button, SIGNAL(valueChanged(bool)), this->parent(), SIGNAL(assign8_buttonSignal(bool)));
-    
-    QObject::connect(this->parent(), SIGNAL(ch_mode_statusSignal(bool)), this->ch_mode_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(channel_A_statusSignal(bool)), this->channel_A_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(channel_B_statusSignal(bool)), this->channel_B_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(preamp1_statusSignal(bool)), this->preamp1_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(preamp2_statusSignal(bool)), this->preamp2_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(solo1_statusSignal(bool)), this->solo1_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(solo2_statusSignal(bool)), this->solo2_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(distortion_statusSignal(bool)), this->distortion_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(compressor_statusSignal(bool)), this->compressor_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(ns1_statusSignal(bool)), this->ns1_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(ns2_statusSignal(bool)), this->ns2_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(fx1_statusSignal(bool)), this->fx1_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(fx2_statusSignal(bool)), this->fx2_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(reverb_statusSignal(bool)), this->reverb_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(delay_statusSignal(bool)), this->delay_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(chorus_statusSignal(bool)), this->chorus_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(eq_statusSignal(bool)), this->eq_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(pedal_statusSignal(bool)), this->pedal_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(sendreturn_statusSignal(bool)), this->sendreturn_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(master_statusSignal(bool)), this->master_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(system_statusSignal(bool)), this->system_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(system_midi_statusSignal(bool)), this->system_midi_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(assign1_statusSignal(bool)), this->assign1_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(assign2_statusSignal(bool)), this->assign2_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(assign3_statusSignal(bool)), this->assign3_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(assign4_statusSignal(bool)), this->assign4_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(assign5_statusSignal(bool)), this->assign5_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(assign6_statusSignal(bool)), this->assign6_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(assign7_statusSignal(bool)), this->assign7_Button, SLOT(setValue(bool)));
-    QObject::connect(this->parent(), SIGNAL(assign8_statusSignal(bool)), this->assign8_Button, SLOT(setValue(bool)));
 
         QObject::connect(this->temp1_copy_Button, SIGNAL(valueChanged(bool)),  this, SLOT(temp1_copy(bool)));
         QObject::connect(this->temp1_paste_Button, SIGNAL(valueChanged(bool)), this, SLOT(temp1_paste(bool)));
@@ -303,20 +254,7 @@ floorBoardDisplay::floorBoardDisplay(QWidget *parent, QPoint pos)
         QString midiIn = preferences->getPreferences("Midi", "MidiIn", "device");
         QString midiOut = preferences->getPreferences("Midi", "MidiOut", "device");
         if(midiIn!="" && midiOut!="")
-        {autoconnect(); } else {
-        QMessageBox *msgBox = new QMessageBox();
-        msgBox->isTopLevel();
-        msgBox->setWindowTitle(deviceType + tr(" FloorBoard"));
-        msgBox->setIcon(QMessageBox::Warning);
-        msgBox->setTextFormat(Qt::RichText);
-        QString msgText;
-        msgText.append("<font size='+1'><b>");
-        msgText.append(tr("Midi device not selected in Preferences Menu."));
-        msgText.append("<b></font><br>");
-        msgText.append(tr("Select the GT-10 or a midi device from the Preferences USB/Midi menu and press the 'Connect' button"));
-        msgBox->setText(msgText);
-        msgBox->setStandardButtons(QMessageBox::Ok);
-        msgBox->exec();};
+        {autoconnect(); };
         }
 
 QPoint floorBoardDisplay::getPos()
@@ -495,7 +433,7 @@ void floorBoardDisplay::updateDisplay()
         {
                 if(sysxIO->isConnected())
                 {
-                        this->writeButton->setBlink(false);
+                        this->writeButton->setBlink(true);
                         this->writeButton->setValue(false);
                 };
                 int bank = sysxIO->getBank();
@@ -505,9 +443,9 @@ void floorBoardDisplay::updateDisplay()
         else
         {
                 patchNumDisplay->clearAll();
-                this->writeButton->setBlink(false);   
+                this->writeButton->setBlink(false);   //cjw
                 this->writeButton->setValue(false);
-        };  
+        };  // to here
         int index = sysxIO->getSourceValue("Structure", "00", "00", "11");
         this->output->controlListComboBox->setCurrentIndex(index);
         index = sysxIO->getSourceValue("Structure", "00", "00", "10");
@@ -531,7 +469,7 @@ void floorBoardDisplay::autoconnect()
                 QObject::connect(sysxIO, SIGNAL(sysxReply(QString)),
                         this, SLOT(autoConnectionResult(QString)));
 
-                sysxIO->sendSysx(idRequestString); // GT-10 Identity Request.
+                sysxIO->sendSysx(idRequestString); // GT-10B Identity Request.
         }
         else
         {
@@ -558,7 +496,7 @@ void floorBoardDisplay::autoConnectionResult(QString sysxMsg)
 
                         if(sysxIO->getBank() != 0)
                         {
-                                this->writeButton->setBlink(false);
+                                this->writeButton->setBlink(true);
                                 this->writeButton->setValue(false);
                         };
                 }else
@@ -730,7 +668,7 @@ void floorBoardDisplay::temp1_copy(bool value)
 
   QString sysxMsg;
         QList< QList<QString> > patchData = sysxIO->getFileSource().hex; // Get the loaded patch data.
-        //QList<QString> patchAddress = sysxIO->getFileSource().address;
+        QList<QString> patchAddress = sysxIO->getFileSource().address;
         QString addr1 = tempBulkWrite;  // temp address
         QString addr2 = QString::number(0, 16).toUpper();
 
@@ -787,7 +725,7 @@ void floorBoardDisplay::temp2_copy(bool value)
 
   QString sysxMsg;
         QList< QList<QString> > patchData = sysxIO->getFileSource().hex; // Get the loaded patch data.
-        //QList<QString> patchAddress = sysxIO->getFileSource().address;
+        QList<QString> patchAddress = sysxIO->getFileSource().address;
         QString addr1 = tempBulkWrite;  // temp address
         QString addr2 = QString::number(0, 16).toUpper();
 
@@ -843,7 +781,7 @@ void floorBoardDisplay::temp3_copy(bool value)
 
   QString sysxMsg;
         QList< QList<QString> > patchData = sysxIO->getFileSource().hex; // Get the loaded patch data.
-        //QList<QString> patchAddress = sysxIO->getFileSource().address;
+        QList<QString> patchAddress = sysxIO->getFileSource().address;
         QString addr1 = tempBulkWrite;  // temp address
         QString addr2 = QString::number(0, 16).toUpper();
 
@@ -899,7 +837,7 @@ void floorBoardDisplay::temp4_copy(bool value)
 
   QString sysxMsg;
         QList< QList<QString> > patchData = sysxIO->getFileSource().hex; // Get the loaded patch data.
-        //QList<QString> patchAddress = sysxIO->getFileSource().address;
+        QList<QString> patchAddress = sysxIO->getFileSource().address;
         QString addr1 = tempBulkWrite;  // temp address
         QString addr2 = QString::number(0, 16).toUpper();
 
@@ -955,7 +893,7 @@ void floorBoardDisplay::temp5_copy(bool value)
 
   QString sysxMsg;
         QList< QList<QString> > patchData = sysxIO->getFileSource().hex; // Get the loaded patch data.
-        //QList<QString> patchAddress = sysxIO->getFileSource().address;
+        QList<QString> patchAddress = sysxIO->getFileSource().address;
         QString addr1 = tempBulkWrite;  // temp address
         QString addr2 = QString::number(0, 16).toUpper();
 
@@ -1221,13 +1159,12 @@ void floorBoardDisplay::writeSignal(bool)
                                         {	/* Accepted to overwrite data. So now we have to set destination address by replacing the default (buffer). */
 
                                                 writeToMemory();
-                                                sysxIO->setSyncStatus(true);
                                         }
                                         else if(sysxIO->isConnected())
                                         {
                                                 sysxIO->setDeviceReady(true);
                                                 this->writeButton->setBlink(false);
-                                                //this->writeButton->setValue(true);
+                                                this->writeButton->setValue(true);
                                         };
                                 };
                         };
@@ -1238,27 +1175,20 @@ void floorBoardDisplay::writeSignal(bool)
 void floorBoardDisplay::writeToBuffer()
 {
         SysxIO *sysxIO = SysxIO::Instance();
-        QMessageBox *msgBox = new QMessageBox();
-    msgBox->setWindowTitle(deviceType + tr(" FloorBoard"));
-    msgBox->setIcon(QMessageBox::Warning);
-    msgBox->setTextFormat(Qt::RichText);
-    QString msgText;
-    msgText.append("<font size='+1'><b>");
-    msgText.append(tr("You have not chosen a User Patch address to Write the patch to"));
-    msgText.append("<b></font><br>");
-    msgText.append(tr("This will only update the GT-10 Temporary Buffer memory<br>"));
-    msgText.append(tr (" with the editor patch. "));
-    msgBox->setInformativeText(tr("Select the required destination patch <br>by a single-click on the left panel Patch-Tree"));
-    msgBox->setText(msgText);
-    msgBox->setStandardButtons(QMessageBox::Close);
-    msgBox->exec();
-
-    sysxIO->writeToBuffer();
-    sysxIO->setSyncStatus(true);
-        this->writeButton->setBlink(false);	// Sync so we stop blinking the button
-        this->writeButton->setValue(false);	// and activate the write button.
+        QObject::disconnect(sysxIO, SIGNAL(patchBufferWriteVerified(bool)), this, SLOT(patchBufferWriteVerified(bool)));
+        QObject::connect(sysxIO, SIGNAL(patchBufferWriteVerified(bool)), this, SLOT(patchBufferWriteVerified(bool)));
+        sysxIO->writeToBuffer();
 };
 
+void floorBoardDisplay::patchBufferWriteVerified(bool verified)
+{
+        SysxIO *sysxIO = SysxIO::Instance();
+        QObject::disconnect(sysxIO, SIGNAL(patchBufferWriteVerified(bool)), this, SLOT(patchBufferWriteVerified(bool)));
+        this->writeButton->setBlink(!verified);
+        this->writeButton->setValue(false);
+        emit setStatusMessage(verified ? tr("Temporary patch buffer verified by readback.") : tr("Temporary patch buffer could not be verified."));
+        emit setStatusProgress(0);
+};
 void floorBoardDisplay::writeToMemory()
 {
         SysxIO *sysxIO = SysxIO::Instance();
@@ -1315,14 +1245,31 @@ void floorBoardDisplay::writeToMemory()
                         sysxMsg.append(hex);
                 };
         };
-        sysxIO->setSyncStatus(true);		// Still in sync
-        this->writeButton->setBlink(false); // so no blinking here either...
-        this->writeButton->setValue(false);	// ... and still the button will be active also ...
-
-        QObject::connect(sysxIO, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString))); // Connect the result signal to a slot that will reset the device after sending.
-        sysxIO->sendSysx(sysxMsg);								// Send the data.
+        this->writeButton->setBlink(true);
+        this->writeButton->setValue(false);
+        QObject::disconnect(sysxIO, SIGNAL(patchMemoryWriteVerified(bool)), this, SLOT(patchMemoryWriteVerified(bool)));
+        QObject::connect(sysxIO, SIGNAL(patchMemoryWriteVerified(bool)), this, SLOT(patchMemoryWriteVerified(bool)));
+        sysxIO->sendPatchWriteAndVerify(sysxMsg, bank, patch);								// Send the data.
         };
 
+void floorBoardDisplay::patchMemoryWriteVerified(bool verified)
+{
+    SysxIO *sysxIO = SysxIO::Instance();
+    QObject::disconnect(sysxIO, SIGNAL(patchMemoryWriteVerified(bool)), this, SLOT(patchMemoryWriteVerified(bool)));
+    this->writeButton->setBlink(!verified);
+    this->writeButton->setValue(verified);
+    if (verified)
+    {
+        setPatchNumDisplay(sysxIO->getLoadedBank(), sysxIO->getLoadedPatch());
+        emit setStatusMessage(tr("Permanent patch write verified by readback."));
+        emit connectedSignal();
+    }
+    else
+    {
+        emit setStatusMessage(tr("Permanent patch write could not be verified; it remains unsynchronized."));
+    }
+    emit setStatusProgress(0);
+}
 void floorBoardDisplay::patchChangeFailed()
 {
         SysxIO *sysxIO = SysxIO::Instance();
@@ -1331,34 +1278,6 @@ void floorBoardDisplay::patchChangeFailed()
         setPatchNumDisplay(sysxIO->getLoadedBank(), sysxIO->getLoadedPatch());
 }
 
-void floorBoardDisplay::resetDevice(QString replyMsg)
-{
-      SysxIO *sysxIO = SysxIO::Instance();
-      QObject::disconnect(sysxIO, SIGNAL(sysxReply(QString)),	this, SLOT(resetDevice(QString)));
-
-        if(sysxIO->getBank() != sysxIO->getLoadedBank() || sysxIO->getPatch() != sysxIO->getLoadedPatch())
-          {
-            sysxIO->setLoadedBank(sysxIO->getBank());
-            sysxIO->setLoadedPatch(sysxIO->getPatch());
-          };
-
-    emit setStatusProgress(33); // time wasting sinusidal statusbar progress
-    SLEEP(50);
-    emit setStatusProgress(66);
-    SLEEP(50);
-    emit setStatusProgress(100);
-    SLEEP(50);
-    emit setStatusProgress(75);
-    SLEEP(50);
-    emit setStatusProgress(42);
-    SLEEP(50);
-    emit setStatusProgress(25);
-    SLEEP(50);
-    sysxIO->setDeviceReady(true);	// Free the device after finishing interaction.
-    emit connectedSignal();			// Emit this signal to tell we are still connected and to update the patch names in case they have changed.
-    sysxIO->setDeviceReady(true);
-};
-
 void floorBoardDisplay::patchSelectSignal(int bank, int patch)
 {
         SysxIO *sysxIO = SysxIO::Instance();
@@ -1366,7 +1285,7 @@ void floorBoardDisplay::patchSelectSignal(int bank, int patch)
         {
                 currentSyncStatus = sysxIO->getSyncStatus();
                 sysxIO->setSyncStatus(false);
-                writeButton->setBlink(false);
+                writeButton->setBlink(true);
         };
 
         //if( sysxIO->getLoadedBank() != bank ||  sysxIO->getLoadedPatch() != patch)

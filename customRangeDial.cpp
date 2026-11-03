@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007~2014 Colin Willcocks.
+** Copyright (C) 2007~2010 Colin Willcocks.
 ** Copyright (C) 2005~2007 Uco Mesdag. 
 ** All rights reserved.
 ** This file is part of "GT-10 Fx FloorBoard".
@@ -21,7 +21,12 @@
 **
 ****************************************************************************/
 
+#include <QtGlobal>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QtWidgets>
+#endif
+
+#include <QtGui>
 #include "customRangeDial.h"
 #include "SysxIO.h"
 
@@ -69,7 +74,7 @@ void customRangeDial::paintEvent(QPaintEvent *)
 void customRangeDial::setOffset(double _newValue)
 {  
 
-	double result = (_newValue/2 - 1)*1.6;
+	double result = _newValue/2 - 1;
 	
 	int imageNr = (int)(result + 0.5);
 	if(imageNr < 0)
