@@ -43,7 +43,7 @@ mainWindow::mainWindow()
 
     // Allow desktop environments (e.g. KDE Plasma) to export the menu globally.
     QMenuBar *bar = menuBar();
-    bar->setNativeMenuBar(true);
+    bar->setNativeMenuBar(false);
     
     floorBoard *fxsBoard = new floorBoard(this);
     Preferences *startupPreferences = Preferences::Instance();
