@@ -56,7 +56,7 @@ mainWindow::mainWindow()
     };
 #endif
 
-#ifdef Q_OS_X11
+#ifdef Q_OS_LINUX
     fxsBoard->setStyle(QStyleFactory::create("plastique"));
     if(QFile(":/qss/linux.qss").exists())
     {
