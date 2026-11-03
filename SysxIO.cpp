@@ -517,14 +517,18 @@ int SysxIO::getSourceValue(QString area, QString hex1, QString hex2, QString hex
 * Reset the device after sending a sysexmesage.
 * And starts to processes the spooler if the device is free.
 **********************************************************************/
-void SysxIO::resetDevice(QString replyMsg) 
+void SysxIO::resetDevice(QString replyMsg)
 {
+	Q_UNUSED(replyMsg);
 	if(this->sendSpooler.size() == 0)
 	{
-		QObject::disconnect(this, SIGNAL(sysxReply(QString)),	
+		QObject::disconnect(this, SIGNAL(sysxReply(QString)),
 			this, SLOT(resetDevice(QString)));
 
-		this->setDeviceReady(true);	// Free the device after finishing interaction.
+		this->setDeviceReady(true);	// Free the device after asynchronous worker completion.
+		emit setStatusSymbol(1);
+		emit setStatusProgress(0);
+		emit setStatusMessage(tr("Ready"));
 	}
 	else
 	{
@@ -1062,9 +1066,9 @@ void SysxIO::returnPatchName(QString sysxMsg)
 			i++;
 		};
 	}
-	else if (sysxMsg.size()/2 > 0 && sysxMsg.size()/2 != 29)
-  {name = tr("bad data");} 
-  else {name = tr("no reply"); };  
+	else if (!sysxMsg.isEmpty())
+  {name = tr("bad data");}
+  else {name = tr("no reply");};  
 	emit patchName(name);	
 };
 
@@ -1185,8 +1189,9 @@ void SysxIO::systemWrite()
 		}; 
 	}; 
 	//setSyncStatus(true);		// In advance of the actual data transfer we set it already to sync.
-	sendSysx(sysxMsg);	// Send the data.
-	setDeviceReady(true);
+	QObject::disconnect(this, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString)));
+	QObject::connect(this, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString)));
+	sendSysx(sysxMsg);	// resetDevice() releases the device after the worker completes.
 };
 
 void SysxIO::systemDataRequest()
@@ -1376,17 +1381,5 @@ void SysxIO::writeToBuffer()
 	QObject::connect(this, SIGNAL(sysxReply(QString)),	// Connect the result signal 
 		this, SLOT(resetDevice(QString)));					// to a slot that will reset the device after sending.
 	sendSysx(sysxMsg);	// Send the data.
-		
-		emit setStatusProgress(33); // time wasting sinusidal statusbar progress
-		SLEEP(150);
-		emit setStatusProgress(66);
-		SLEEP(150);		
-		emit setStatusProgress(100);
-		SLEEP(150);		
-		emit setStatusProgress(75);
-		SLEEP(150);		
-		emit setStatusProgress(42);
-		SLEEP(150); 
-		emit setStatusMessage(tr("Ready"));
-	  setDeviceReady(true);
+	// resetDevice() releases the device when the MIDI worker completes.
 };
