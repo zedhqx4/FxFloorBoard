@@ -40,7 +40,7 @@ jobs:
 
       - name: Configure with qmake
         run: |
-          qmake GT-10FxFloorBoard.pro "QT+=widgets" CONFIG+=release
+          qmake GT-10FxFloorBoard.pro CONFIG+=release
 
       - name: Build
         run: |

@@ -50,6 +50,9 @@ CODECFORTR = UTF-8
 DEPENDPATH += .
 QT += xml
 
+# Qt 5 moved widget classes from QtGui into the QtWidgets module.
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
 #Platform dependent file(s)
 win32 {
         exists("C:/Progra~1/MS_SDKs/Windows/v6.1/Lib/WinMM.Lib") {	# <-- Change the path to WinMM.Lib here!

@@ -26,6 +26,11 @@
 
 #include <QMainWindow>
 #include <QtGui>
+
+// Qt 5 split widget classes out of QtGui; retain Qt 4 compatibility.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <QtWidgets>
+#endif
 #include <QList>
 #include <QCloseEvent>
 #include "editPage.h"
