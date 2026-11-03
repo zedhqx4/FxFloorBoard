@@ -32,6 +32,7 @@ HEADERS += ./editPage.h \
     ./bulkLoadDialog.h \
     ./bulkSaveDialog.h \
     ./customButton.h \
+    ./customPanelButton.h \
     ./customComboBox.h \
     ./customControlParaEQ.h \
     ./customControlGraphicEQ.h \
@@ -132,6 +133,7 @@ SOURCES += ./editPage.cpp \
     ./bulkLoadDialog.cpp \
     ./bulkSaveDialog.cpp \
     ./customButton.cpp \
+    ./customPanelButton.cpp \
     ./customComboBox.cpp \
     ./customControlParaEQ.cpp \
     ./customControlGraphicEQ.cpp \
