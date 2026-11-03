@@ -1333,6 +1333,34 @@ void floorBoardDisplay::patchMemoryWriteVerified(bool verified)
     }
     emit setStatusProgress(0);
 }
+void floorBoardDisplay::resetDevice(QString replyMsg)
+{
+      SysxIO *sysxIO = SysxIO::Instance();
+      QObject::disconnect(sysxIO, SIGNAL(sysxReply(QString)),	this, SLOT(resetDevice(QString)));
+
+        if(sysxIO->getBank() != sysxIO->getLoadedBank() || sysxIO->getPatch() != sysxIO->getLoadedPatch())
+          {
+            sysxIO->setLoadedBank(sysxIO->getBank());
+            sysxIO->setLoadedPatch(sysxIO->getPatch());
+          };
+
+    emit setStatusProgress(33); // time wasting sinusidal statusbar progress
+    SLEEP(50);
+    emit setStatusProgress(66);
+    SLEEP(50);
+    emit setStatusProgress(100);
+    SLEEP(50);
+    emit setStatusProgress(75);
+    SLEEP(50);
+    emit setStatusProgress(42);
+    SLEEP(50);
+    emit setStatusProgress(25);
+    SLEEP(50);
+    sysxIO->setDeviceReady(true);	// Free the device after finishing interaction.
+    emit connectedSignal();			// Emit this signal to tell we are still connected and to update the patch names in case they have changed.
+    sysxIO->setDeviceReady(true);
+};
+
 void floorBoardDisplay::patchChangeFailed()
 {
         SysxIO *sysxIO = SysxIO::Instance();
