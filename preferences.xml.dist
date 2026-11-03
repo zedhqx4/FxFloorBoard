@@ -27,6 +27,7 @@
 		<Single bool="true"/>
 		<Size height="716" minheight="716" minwidth="1014" width="1318"/>
 		<Splash bool="true"/>
+        <MenuBar visible="true"/>
 		<Widgets bool="true"/>
 	</Window>
 </Preferences>
