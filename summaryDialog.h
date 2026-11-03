@@ -24,6 +24,11 @@
 #ifndef SUMMARYDIALOG_H
 #define SUMMARYDIALOG_H
 
+// Qt 5 moved widget classes from QtGui into QtWidgets.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <QtWidgets>
+#endif
+
 #include <QDialog>
 #include <QMainWindow>
 #include <QTextEdit>
