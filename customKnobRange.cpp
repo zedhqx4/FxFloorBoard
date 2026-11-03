@@ -21,6 +21,11 @@
 **
 ****************************************************************************/
 
+#include <QtGlobal>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <QtWidgets>
+#endif
+
 #include "customKnobRange.h"
 #include "MidiTable.h"
 #include "SysxIO.h"
