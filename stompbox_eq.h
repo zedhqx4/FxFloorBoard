@@ -25,6 +25,11 @@
 #define STOMPBOX_EQ_H
 
 #include <QtGui>
+
+// Qt 5 moved widget classes from QtGui into QtWidgets.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <QtWidgets>
+#endif
 #include <QWidget>
 #include "stompBox.h"
 
