@@ -21,6 +21,7 @@
 **
 ****************************************************************************/
 
+#include <QApplication>
 #include "stompBox.h"
 #include "MidiTable.h"
 #include "SysxIO.h"

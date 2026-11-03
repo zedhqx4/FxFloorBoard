@@ -21,6 +21,7 @@
 **
 ****************************************************************************/
 
+#include <QApplication>
 #include "floorPanelBarButton.h"
 
 floorPanelBarButton::floorPanelBarButton(bool collapsed, QPoint buttonPos, QWidget *parent,

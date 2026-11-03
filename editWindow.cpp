@@ -21,6 +21,7 @@
 **
 ****************************************************************************/
 
+#include <QApplication>
 #include "editWindow.h"
 #include "MidiTable.h"
 #include "SysxIO.h"

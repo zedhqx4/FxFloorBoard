@@ -21,6 +21,7 @@
 **
 ****************************************************************************/
 
+#include <QApplication>
 #include <QChar>
 #include "floorBoardDisplay.h"
 #include "Preferences.h"
