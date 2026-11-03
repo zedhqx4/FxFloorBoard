@@ -1193,7 +1193,8 @@ void SysxIO::systemWrite()
 			sysxMsg.append(hex);
 		}; 
 	}; 
-	//setSyncStatus(true);		// In advance of the actual data transfer we set it already to sync.
+	setNoError(true);
+	setSyncStatus(false); // Keep this write unverified until readback succeeds.
 	QObject::disconnect(this, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString)));
 	QObject::connect(this, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString)));
 	sendSysx(sysxMsg);	// resetDevice() releases the device after the worker completes.
@@ -1381,7 +1382,8 @@ void SysxIO::writeToBuffer()
 			sysxMsg.append(hex);
 		}; 
 	}; 
-	setSyncStatus(true);		// In advance of the actual data transfer we set it already to sync.
+	setNoError(true);
+	setSyncStatus(false); // Keep this patch unverified until readback succeeds.
 	
 	QObject::connect(this, SIGNAL(sysxReply(QString)),	// Connect the result signal 
 		this, SLOT(resetDevice(QString)));					// to a slot that will reset the device after sending.
