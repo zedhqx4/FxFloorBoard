@@ -22,6 +22,7 @@
 ****************************************************************************/
 
 #include <QApplication>
+#include <QScreen>
 #include "mainWindow.h"
 #include "Preferences.h"
 #include "MidiTable.h"
@@ -174,16 +175,18 @@ int main(int argc, char **argv)
     else
     {
         splash->showStatusMessage(QObject::tr("Centering main window..."));
-        QDesktopWidget *desktop = new QDesktopWidget;
-        QRect screen = desktop->availableGeometry(desktop->primaryScreen());
-        int screenWidth = screen.width();                    // returns available screen width
-        int screenHeight = screen.height();                  // returns available screen height
+        QScreen *primaryScreen = QGuiApplication::primaryScreen();
+        QRect availableGeometry = primaryScreen
+            ? primaryScreen->availableGeometry()
+            : QRect(0, 0, windowWidth, windowHeight);
 
         windowHeight = preferences->getPreferences("Window", "Size", "minheight").toInt(&ok, 10);
 
-        int x = (screenWidth - windowWidth) / 2;
-        int y = (screenHeight - windowHeight) / 2;
-        window.setGeometry(x, y, window.width(), window.height());
+        const int x = availableGeometry.x()
+            + (availableGeometry.width() - windowWidth) / 2;
+        const int y = availableGeometry.y()
+            + (availableGeometry.height() - windowHeight) / 2;
+        window.setGeometry(x, y, windowWidth, windowHeight);
     };
 
     app.processEvents();
