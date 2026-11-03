@@ -189,7 +189,6 @@ SOURCES += ./editPage.cpp \
     ./menuPage_system.cpp \
     ./renameDialog.cpp \
     ./renameWidget.cpp \
-    ./RtMidi.cpp \
     ./statusBarSymbol.cpp \
     ./statusBarWidget.cpp \
     ./stompBox.cpp \
