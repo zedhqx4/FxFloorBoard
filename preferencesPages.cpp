@@ -257,10 +257,7 @@ WindowPage::WindowPage(QWidget *parent)
 
 	QLabel *splashDescriptionLabel = new QLabel(QObject::tr("Disable or enable the splash screen."));
 	QCheckBox *splashCheckBox = new QCheckBox(QObject::tr("Splash screen"));
-    QCheckBox *menuBarCheckBox = new QCheckBox(QObject::tr("Show menu bar"));
 	this->splashCheckBox = splashCheckBox;
-    this->menuBarCheckBox = menuBarCheckBox;
-    if(menuBarVisible != "false") { menuBarCheckBox->setChecked(true); };
 	
         if(splashScreen=="true") { splashCheckBox->setChecked(true); };
 
