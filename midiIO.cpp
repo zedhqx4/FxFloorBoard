@@ -94,6 +94,7 @@ midiIO::midiIO()
  *************************************************************************/
 void midiIO::queryMidiOutDevices()
 {
+    this->midiOutDevices.clear();
          MidiBackendOut *midiout = 0;
          std::string portName;
          unsigned int outPorts;
@@ -144,6 +145,7 @@ QList<QString> midiIO::getMidiOutDevices()
  *************************************************************************/
 void midiIO::queryMidiInDevices()
 {
+    this->midiInDevices.clear();
          MidiBackendIn *midiin = 0;
          std::string portName;
          unsigned int inPorts;
