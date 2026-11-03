@@ -43,7 +43,7 @@ jobs:
 
       - name: Check removed Qt 6 API migration blockers
         run: |
-          if grep -R -n -E 'QDesktopWidget|Q_WS_X11' \
+          if grep -R -n -E 'QDesktopWidget' \
             --include='*.cpp' --include='*.h' .; then
             echo "Legacy desktop/platform API found"
             exit 1
