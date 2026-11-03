@@ -561,7 +561,7 @@ void bankTreeList::updatePatch(QString replyMsg)
 
 
         replyMsg = replyMsg.remove(" ").toUpper();       /* TRANSLATE SYSX MESSAGE FORMAT to 128 byte data blocks */
-        if (replyMsg.size()/2 == 1784){
+        if (replyMsg.size()/2 == patchReplySize && replyMsg.startsWith("F0410000002F12") && replyMsg.endsWith("F7")){
         QString header = "F0410000002F12";
         QString footer ="00F7";
         QString addressMsb = replyMsg.mid(14,4);

@@ -1229,7 +1229,7 @@ void SysxIO::systemReply(QString replyMsg)
   
 	if(noError())
 	{
-		if(replyMsg.size()/2 == 2236)
+		if(replyMsg.size()/2 == systemSize && replyMsg.startsWith("F0410000002F12") && replyMsg.endsWith("F7"))
 		{
 		/* TRANSLATE SYSX MESSAGE FORMAT to 128 byte data blocks */
 	QString header = "F0410000002F12";
