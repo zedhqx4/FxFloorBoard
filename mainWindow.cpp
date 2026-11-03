@@ -44,10 +44,12 @@ mainWindow::mainWindow()
     // Allow desktop environments (e.g. KDE Plasma) to export the menu globally.
     QMenuBar *bar = menuBar();
     bar->setNativeMenuBar(true);
-
+    
     floorBoard *fxsBoard = new floorBoard(this);
+    Preferences *startupPreferences = Preferences::Instance();
+    startupPreferences->getPreferences("Window", "MenuBar", "visible");
     bar->setVisible(true);
-
+    
     /* Loads the stylesheet for the current platform if present */
 #ifdef Q_OS_WIN
     /* This set the floorboard default style to the "plastique" style,
