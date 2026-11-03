@@ -8,6 +8,7 @@ on:
   pull_request:
     branches:
       - gt-10-midi-modernization
+      - GT10-SVN-Modernization
   workflow_dispatch:
 
 permissions:
