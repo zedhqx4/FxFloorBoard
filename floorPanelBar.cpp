@@ -21,6 +21,7 @@
 **
 ****************************************************************************/
 
+#include <QApplication>
 #include "floorPanelBar.h"
 #include "floorPanelBarButton.h"
 
