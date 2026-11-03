@@ -108,13 +108,13 @@ floorBoardDisplay::floorBoardDisplay(QWidget *parent, QPoint pos)
   userDialog->setGeometry(780, patchDisplayRowOffset+5, 320, 25);
   userDialog->setWhatsThis(tr("Clicking on this will open<br>a text dialog window<br>allowing user text input."));
   customRenameWidget *patchDialog = new customRenameWidget(this, "0D", "00", "00", "Structure", "80");
-  patchDialog->setGeometry(50, bottomOffset, 980, 25);
+  patchDialog->setGeometry(50, bottomOffset, 480, 25);
   patchDialog->setWhatsThis(tr("Clicking on this will open<br>a text dialog window<br>allowing user text input."));
   this->output = new customControlListMenu(this, "00", "00", "11", "right");
   output->setGeometry(580, patchDisplayRowOffset, 180, 30);
   output->setWhatsThis(tr("This is the Patch Mode setting of Output Select<br>this is only active if the SYSTEM setting<br>is set to Patch Mode."));
   this->catagory = new customControlListMenu(this, "00", "00", "10", "right");
-  catagory->setGeometry(580, patchDisplayRowOffset+31, 300, 30);
+  catagory->setGeometry(580, patchDisplayRowOffset+19, 300, 30);
 
   this->connectButton = new customButton(tr("Connect"), false, QPoint(390, patchDisplayRowOffset), this, ":/images/greenledbutton.png");
   this->connectButton->setWhatsThis(tr("Connect Button<br>used to establish a continuous midi connection<br>when lit green, the connection is valid"));
