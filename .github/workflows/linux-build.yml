@@ -47,14 +47,14 @@ jobs:
 
       - name: Verify executable
         run: |
-          test -x packager/GT-10FxFloorBoard
-          file packager/GT-10FxFloorBoard
+          test -x GT-10FxFloorBoard
+          file GT-10FxFloorBoard
 
       - name: Upload Linux executable
         uses: actions/upload-artifact@v4
         with:
           name: FxFloorBoard-linux-svn-baseline-${{ github.sha }}
-          path: packager/GT-10FxFloorBoard
+          path: GT-10FxFloorBoard
           if-no-files-found: error
           compression-level: 0
           retention-days: 14
