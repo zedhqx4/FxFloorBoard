@@ -366,6 +366,11 @@ void midiIO::receiveMsg(QString sysxInMsg, int midiInPort)
     {
         midiin = createMidiIn(clientName);
         if (midiin->getPortCount() < 1) goto cleanup;
+#ifdef Q_OS_LINUX
+        // GT-10 patch and system replies exceed RtMidi's 1 KiB default input buffer.
+        // Set the ALSA decoder buffer before opening the input port.
+        midiin->setBufferSize(4096, 4);
+#endif
         midiin->ignoreTypes(false, true, true);
         midiin->setCallback(&midicallback, this);
         callbackInstalled = true;
