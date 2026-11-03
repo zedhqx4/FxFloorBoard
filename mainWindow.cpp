@@ -41,9 +41,9 @@ mainWindow::mainWindow()
     createActions();
     createMenus();
 
-    // Keep the menu bar in the application window (not in the desktop panel).
+    // Allow desktop environments (e.g. KDE Plasma) to export the menu globally.
     QMenuBar *bar = menuBar();
-    bar->setNativeMenuBar(false);
+    bar->setNativeMenuBar(true);
 
     floorBoard *fxsBoard = new floorBoard(this);
     bar->setVisible(true);
