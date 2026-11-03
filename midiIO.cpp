@@ -45,7 +45,7 @@ static void midiBackendErrorCallback(rt::midi::RtMidiError::Type type, const std
     Q_UNUSED(type);
     midiIO *owner = static_cast<midiIO *>(userData);
     if (owner && type != rt::midi::RtMidiError::DEBUG_WARNING)
-        owner->reportMidiBackendError(tr("MIDI Backend Error"), QString::fromStdString(errorText));
+        owner->reportMidiBackendError(QString::fromLatin1("MIDI Backend Error"), QString::fromStdString(errorText));
 }
 #endif
 
