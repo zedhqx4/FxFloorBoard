@@ -40,7 +40,13 @@ mainWindow::mainWindow()
     {
          createActions();
      createMenus();
-        floorBoard *fxsBoard = new floorBoard(this);
+        
+    // Keep the menu bar inside the window instead of using a desktop-global menu.
+    QMenuBar *bar = menuBar();
+    bar->setNativeMenuBar(false);
+    bar->setVisible(true);
+
+    floorBoard *fxsBoard = new floorBoard(this);
 
 
 
