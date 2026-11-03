@@ -53,7 +53,7 @@ void renameWidget::updateName(QString name)
 	{
 		if(i<name.size())
 		{
-				char asciiChar = name.at(i).toAscii();
+				char asciiChar = name.at(i).toLatin1();
 				int asciiValue = (int)asciiChar;
 				QString nameHexValue = QString::number(asciiValue, 16).toUpper();
 				if(nameHexValue.length() < 2) nameHexValue.prepend("0");
