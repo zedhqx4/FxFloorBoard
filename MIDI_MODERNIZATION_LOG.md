@@ -34,10 +34,15 @@ This log records the transport/build work on the GT-10 branch. The reference bra
 ### SysxIO write lifecycle
 - `636d8b2` — Keep the device reserved until asynchronous patch/System writes complete; remove the fake blocking progress sleeps from `writeToBuffer()`. Device readiness is released by `resetDevice()` after the worker reply.
 - `98fe613` — Reset the System-read error flag at the start of a fresh request, so a prior failed transfer does not poison later reads.
+- `de1de54` — Keep permanent patch writes explicitly unverified after the send; the UI no longer claims synchronization merely because the write thread finished.
+- `f27f4f4` — Verify writes to the temporary patch buffer by reading address `0x60:00` back with `patchRequest(0, 0)`, checking DT1 checksums and comparing payload bytes before setting sync true.
+- `bb09a78` — Verify System writes by requesting the full System area after transmission and comparing the reconstructed DT1 payload with the expected System data before setting sync true.
 
 ## Validation status
 
 - **Linux Qt 5 / ALSA CI passed** for commit `b3ab5da`: qmake configuration, full build, and the executable verification step all succeeded. Run: https://github.com/zedhqx4/FxFloorBoard/actions/runs/41669746927
+- **Linux Qt 5 / ALSA CI also passed** for commit `f27f4f4`, including the full build and executable check. Run: https://github.com/zedhqx4/FxFloorBoard/actions/runs/41670981644
+- The System-write readback verification in `bb09a78` is the current code under CI review; do not mark it build-validated until that run completes.
 - This validates the Linux build and link, not physical MIDI communication.
 - No physical GT-10 read/write test has been performed by CI. Device-level validation remains required, starting with identity, patch-name, and read-only patch/System requests.
-- Patch and System writes are deliberately left **unverified** until a subsequent readback from the GT-10 confirms the data. No write test should be treated as successful merely because the send operation returned.
+- Temporary patch-buffer writes and System writes now use automatic readback comparison in code; CI does not exercise a physical device. Permanent patch-memory writes remain **unverified** after send and need their own address-specific readback path. No write test should be treated as successful merely because the send operation returned.
