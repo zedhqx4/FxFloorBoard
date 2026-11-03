@@ -58,7 +58,7 @@ private:
 	void queryMidiOutDevices();
 	void sendSyxMsg(QString sysxOutMsg, int midiOutport);
 	void sendMidiMsg(QString sysxOutMsg, int midiOutport);
-	void receiveMsg(QString sysxMsg, int midiInPort);
+	void receiveMsg(int midiInPort);
 	QList<QString> midiOutDevices;
 	QList<QString> midiInDevices;
 	

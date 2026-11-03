@@ -352,7 +352,7 @@ void midiIO::callbackMsg(QString rxData)
     QMutexLocker locker(&sysxBufferMutex);
     sysxBuffer.append(rxData);
 };
-void midiIO::receiveMsg(QString sysxInMsg, int midiInPort)
+void midiIO::receiveMsg(int midiInPort)
 {
     count = 0;
     emit setStatusSymbol(3);
@@ -472,66 +472,61 @@ void midiIO::run()
         else   // if not a midi message, then it must be a sysx message
         {
         RECEIVE:
-                this->
-                { QMutexLocker locker(&sysxBufferMutex); this->sysxBuffer.clear(); }
-                this->sysxInMsg.clear();
-                /* Check if we are going to receive something on sending */
-                bool receive;
-                (this->sysxOutMsg.mid(sysxAddressOffset*2-2, 2) != "12")? receive = true: receive = false;
-                if(receive==true)
                 {
-                        emit setStatusSymbol(3);
-                        /* Get the size of data bytes returned to calculate the progress percentage */
-                        bool ok;
-                        QString sizeChunk = sysxOutMsg.mid(sysxDataOffset * 2, 4 * 2);
-                        int dataLenght = sizeChunk.toInt(&ok, 16);
-                        if(dataLenght == 0) // Id request>
-                        {
-                        }
-                        else if(sizeChunk == patchRequestDataSize) // Patch Request data size
-                        {     // progressbar scaled to patch size
-                        }
-                        else if (sizeChunk == "00020900")
-                        {
-      };
-                        receiveMsg(sysxInMsg, midiInPort);
-      Preferences *preferences = Preferences::Instance(); // Load the preferences.
-            int receivedBytes = 0;
-            { QMutexLocker locker(&sysxBufferMutex); receivedBytes = this->sysxBuffer.size() / 2; }
-            if((receivedBytes != count) && (repeat<3) && preferences->getPreferences("Midi", "DBug", "bool")!="true")
-{
-    emit setStatusdBugMessage(tr("re-trying data request"));
-    repeat = repeat + 1;
-    goto RECEIVE;
-}
-if (count > 0 && receivedBytes != count)
-{
-    // Never forward a partial or unrelated response to the patch parser.
-    this->sysxInMsg.clear();
-    emit errorSignal(tr("Midi Input Error"), tr("incomplete GT-10 SysEx response"));
-}
-      emit midiFinished();
-                 }
+                    QMutexLocker locker(&sysxBufferMutex);
+                    this->sysxBuffer.clear();
+                }
+                this->sysxInMsg.clear();
+                const bool expectsReply =
+                    (this->sysxOutMsg.mid(sysxAddressOffset * 2 - 2, 2) != "12");
+                if (expectsReply)
+                {
+                    emit setStatusSymbol(3);
+                    receiveMsg(midiInPort);
+
+                    int receivedBytes = this->sysxInMsg.size() / 2;
+                    Preferences *preferences = Preferences::Instance();
+                    const bool mayRetry =
+                        preferences->getPreferences("Midi", "DBug", "bool") != "true";
+                    if (receivedBytes != count && repeat < 3 && mayRetry)
+                    {
+                        emit setStatusdBugMessage(tr("re-trying data request"));
+                        ++repeat;
+                        goto RECEIVE;
+                    }
+
+                    if (count > 0 && receivedBytes != count)
+                    {
+                        // Never forward a partial or unrelated response to the patch parser.
+                        this->sysxInMsg.clear();
+                        emit errorSignal(tr("Midi Input Error"), tr("incomplete GT-10 SysEx response"));
+                    }
+                    emit midiFinished();
+                }
                 else
                 {
-                        emit setStatusSymbol(2);
-                        emit setStatusMessage(tr("Sending"));
-                        sendSyxMsg(sysxOutMsg, midiOutPort);
-                        Preferences *preferences = Preferences::Instance(); bool ok;// Load the preferences.
-                        const int minWait = preferences->getPreferences("Midi", "Delay", "set").toInt(&ok, 10);
-                        emit setStatusProgress(33);  // do the statusbar progress thing
-                        SLEEP((100/minWait)*2);		// and wait predetermined time before being able to send more again.
-                        emit setStatusProgress(75);
-                        SLEEP((100/minWait)*3);
-                        emit setStatusProgress(100);
-                        SLEEP((100/minWait)*3);
-                        emit setStatusProgress(66);
-                        SLEEP((100/minWait)*2);
-                        emit midiFinished(); // We are finished so we send a signal to free the device.
-                };
-                this->sysxInMsg = sysxInMsg;
-                emit replyMsg(sysxInMsg);
+                    emit setStatusSymbol(2);
+                    emit setStatusMessage(tr("Sending"));
+                    sendSyxMsg(sysxOutMsg, midiOutPort);
+                    Preferences *preferences = Preferences::Instance();
+                    bool ok = false;
+                    int minWait = preferences->getPreferences("Midi", "Delay", "set").toInt(&ok, 10);
+                    if (!ok || minWait <= 0)
+                        minWait = 10;
+                    emit setStatusProgress(33);
+                    SLEEP((100 / minWait) * 2);
+                    emit setStatusProgress(75);
+                    SLEEP((100 / minWait) * 3);
+                    emit setStatusProgress(100);
+                    SLEEP((100 / minWait) * 3);
+                    emit setStatusProgress(66);
+                    SLEEP((100 / minWait) * 2);
+                    emit midiFinished();
+                }
+                emit replyMsg(this->sysxInMsg);
                 emit setStatusSymbol(1);
+                emit setStatusProgress(0);
+                
                 emit setStatusProgress(0);
                 };
 };
