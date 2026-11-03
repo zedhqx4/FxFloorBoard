@@ -59,7 +59,6 @@ mainWindow::mainWindow()
 #endif
 
 #ifdef Q_OS_LINUX
-        fxsBoard->setStyle(QStyleFactory::create("Fusion"));
                 if(QFile(":qss/linux.qss").exists())
                 {
                         QFile file(":qss/linux.qss");
