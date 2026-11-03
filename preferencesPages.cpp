@@ -94,7 +94,7 @@ MidiPage::MidiPage(QWidget *parent)
 	for (QList<QString>::iterator dev = midiInDevices.begin(); dev != midiInDevices.end(); ++dev)
     {
 		QString str(*dev);
-		midiInCombo->addItem(str.toAscii().data());
+		midiInCombo->addItem(str.toLatin1().data());
 		id++;
     };
 	if(!midiInDevice.isEmpty())
@@ -114,7 +114,7 @@ MidiPage::MidiPage(QWidget *parent)
 	for (QList<QString>::iterator dev = midiOutDevices.begin(); dev != midiOutDevices.end(); ++dev)
     {
 		QString str(*dev);
-		midiOutCombo->addItem(str.toAscii().data());
+		midiOutCombo->addItem(str.toLatin1().data());
 		id++;
     };
 	if(!midiOutDevice.isEmpty())
