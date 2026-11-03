@@ -59,9 +59,9 @@ mainWindow::mainWindow()
 #endif
 
 #ifdef Q_OS_LINUX
-                if(QFile(":qss/linux.qss").exists())
+                if(QFile(":/qss/linux.qss").exists())
                 {
-                        QFile file(":qss/linux.qss");
+                        QFile file(":/qss/linux.qss");
                         file.open(QFile::ReadOnly);
                         QString styleSheet = QLatin1String(file.readAll());
                         fxsBoard->setStyleSheet(styleSheet);
