@@ -216,6 +216,7 @@ WindowPage::WindowPage(QWidget *parent)
 	QString windowRestore = preferences->getPreferences("Window", "Restore", "window");
 	QString sidepanelRestore = preferences->getPreferences("Window", "Restore", "sidepanel");
 	QString splashScreen = preferences->getPreferences("Window", "Splash", "bool");
+    QString menuBarVisible = preferences->getPreferences("Window", "MenuBar", "visible");
   QString SingleWindow = preferences->getPreferences("Window", "Single", "bool");
   QString WidgetsUse = preferences->getPreferences("Window", "Widgets", "bool");
 
@@ -252,7 +253,10 @@ WindowPage::WindowPage(QWidget *parent)
 
 	QLabel *splashDescriptionLabel = new QLabel(QObject::tr("Disable or enable the splash screen."));
 	QCheckBox *splashCheckBox = new QCheckBox(QObject::tr("Splash screen"));
+    QCheckBox *menuBarCheckBox = new QCheckBox(QObject::tr("Show menu bar"));
 	this->splashCheckBox = splashCheckBox;
+    this->menuBarCheckBox = menuBarCheckBox;
+    if(menuBarVisible != "false") { menuBarCheckBox->setChecked(true); };
 	
         if(splashScreen=="true") { splashCheckBox->setChecked(true); };
 
@@ -260,6 +264,7 @@ WindowPage::WindowPage(QWidget *parent)
 	splashLayout->addWidget(splashDescriptionLabel);
 	splashLayout->addSpacing(12);
 	splashLayout->addWidget(splashCheckBox);
+    splashLayout->addWidget(menuBarCheckBox);
 
 	QVBoxLayout *splashScreenLayout = new QVBoxLayout;
 	splashScreenLayout->addLayout(splashLayout);
