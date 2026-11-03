@@ -47,9 +47,9 @@ mainWindow::mainWindow()
     /* This set the floorboard default style to the "plastique" style,
            as it comes the nearest what the stylesheet uses. */
     //fxsBoard->setStyle(QStyleFactory::create("plastique"));
-    if(QFile(":qss/windows.qss").exists())
+    if(QFile(":/qss/windows.qss").exists())
     {
-        QFile file(":qss/windows.qss");
+        QFile file(":/qss/windows.qss");
         file.open(QFile::ReadOnly);
         QString styleSheet = QLatin1String(file.readAll());
         fxsBoard->setStyleSheet(styleSheet);
@@ -58,9 +58,9 @@ mainWindow::mainWindow()
 
 #ifdef Q_OS_X11
     fxsBoard->setStyle(QStyleFactory::create("plastique"));
-    if(QFile(":qss/linux.qss").exists())
+    if(QFile(":/qss/linux.qss").exists())
     {
-        QFile file(":qss/linux.qss");
+        QFile file(":/qss/linux.qss");
         file.open(QFile::ReadOnly);
         QString styleSheet = QLatin1String(file.readAll());
         fxsBoard->setStyleSheet(styleSheet);
@@ -69,9 +69,9 @@ mainWindow::mainWindow()
 
 #ifdef Q_OS_MAC
     fxsBoard->setStyle(QStyleFactory::create("plastique"));
-    if(QFile(":qss/macosx.qss").exists())
+    if(QFile(":/qss/macosx.qss").exists())
     {
-        QFile file(":qss/macosx.qss");
+        QFile file(":/qss/macosx.qss");
         file.open(QFile::ReadOnly);
         QString styleSheet = QLatin1String(file.readAll());
         fxsBoard->setStyleSheet(styleSheet);
