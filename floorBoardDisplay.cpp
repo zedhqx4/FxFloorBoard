@@ -105,7 +105,7 @@ floorBoardDisplay::floorBoardDisplay(QWidget *parent, QPoint pos)
   nameEdit->setGeometry(70, patchDisplayRowOffset, 150, 34);
   nameEdit->setWhatsThis(tr("Clicking on this will open<br>a text dialog window<br>allowing user text input."));
   customRenameWidget *userDialog = new customRenameWidget(this, "0E", "00", "00", "Structure", "20");
-  userDialog->setGeometry(728, patchDisplayRowOffset+5, 320, 25);
+  userDialog->setGeometry(780, patchDisplayRowOffset+5, 320, 25);
   userDialog->setWhatsThis(tr("Clicking on this will open<br>a text dialog window<br>allowing user text input."));
   customRenameWidget *patchDialog = new customRenameWidget(this, "0D", "00", "00", "Structure", "80");
   patchDialog->setGeometry(50, bottomOffset, 980, 25);
