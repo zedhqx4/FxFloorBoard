@@ -238,7 +238,7 @@ void midiIO::sendSyxMsg(QString sysxOutMsg, int midiOutPort)
             if (value == 0xF7)
             {
                 midiMsgOut->sendMessage(&message);
-                SLEEP(bytesSinceLastFrame / 8);
+                SLEEP((bytesSinceLastFrame * 1000 + 3124) / 3125); // Drain at DIN MIDI's 3125-byte/s rate.
                 message.clear();
                 bytesSinceLastFrame = 0;
             }
