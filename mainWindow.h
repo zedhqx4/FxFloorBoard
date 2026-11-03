@@ -66,7 +66,6 @@ public slots:
         void help();
         void whatsThis();
         void homepage();
-        void donate();
         void manual();
         void license();
         void about();
@@ -100,7 +99,6 @@ private:
         QAction *helpAct;
         QAction *whatsThisAct;
         QAction *homepageAct;
-        QAction *donationAct;
         QAction *manualAct;
         QAction *licenseAct;
         QAction *aboutAct;
