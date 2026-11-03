@@ -3,11 +3,9 @@
 <Preferences>
 	<General>
 		<Application version="20140830"/>
-		<Donate url=""/>
 		<Files dir=""/>
 		<Help url="GT-10FxFloorBoard_help.html"/>
 		<Language code="en"/>
-		<Start count="0"/>
 		<Webpage url=""/>
 	</General>
 	<Language>
