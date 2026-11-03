@@ -1159,7 +1159,6 @@ void floorBoardDisplay::writeSignal(bool)
                                         {	/* Accepted to overwrite data. So now we have to set destination address by replacing the default (buffer). */
 
                                                 writeToMemory();
-                                                sysxIO->setSyncStatus(true);
                                         }
                                         else if(sysxIO->isConnected())
                                         {
@@ -1238,10 +1237,12 @@ void floorBoardDisplay::writeToMemory()
                         sysxMsg.append(hex);
                 };
         };
-        sysxIO->setSyncStatus(true);		// Still in sync
+        sysxIO->setNoError(true);
+        sysxIO->setSyncStatus(false); // Permanent write remains unverified until readback.
         this->writeButton->setBlink(false); // so no blinking here either...
         this->writeButton->setValue(true);	// ... and still the button will be active also ...
 
+        QObject::disconnect(sysxIO, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString)));
         QObject::connect(sysxIO, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString))); // Connect the result signal to a slot that will reset the device after sending.
         sysxIO->sendSysx(sysxMsg);								// Send the data.
         };
@@ -1256,29 +1257,25 @@ void floorBoardDisplay::patchChangeFailed()
 
 void floorBoardDisplay::resetDevice(QString replyMsg)
 {
-      SysxIO *sysxIO = SysxIO::Instance();
-      QObject::disconnect(sysxIO, SIGNAL(sysxReply(QString)),	this, SLOT(resetDevice(QString)));
+    Q_UNUSED(replyMsg);
+    SysxIO *sysxIO = SysxIO::Instance();
+    QObject::disconnect(sysxIO, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString)));
 
-        if(sysxIO->getBank() != sysxIO->getLoadedBank() || sysxIO->getPatch() != sysxIO->getLoadedPatch())
-          {
-            sysxIO->setLoadedBank(sysxIO->getBank());
-            sysxIO->setLoadedPatch(sysxIO->getPatch());
-          };
+    if (sysxIO->getBank() != sysxIO->getLoadedBank() ||
+        sysxIO->getPatch() != sysxIO->getLoadedPatch())
+    {
+        sysxIO->setLoadedBank(sysxIO->getBank());
+        sysxIO->setLoadedPatch(sysxIO->getPatch());
+    }
 
-    emit setStatusProgress(33); // time wasting sinusidal statusbar progress
-    SLEEP(100);
-    emit setStatusProgress(66);
-    SLEEP(100);
-    emit setStatusProgress(100);
-    SLEEP(100);
-    emit setStatusProgress(75);
-    SLEEP(100);
-    emit setStatusProgress(42);
-    SLEEP(100);
-    emit setStatusProgress(25);
-    SLEEP(100);
-    sysxIO->setDeviceReady(true);	// Free the device after finishing interaction.
-    emit connectedSignal();			// Emit this signal to tell we are still connected and to update the patch names in case they have changed.
+    if (sysxIO->noError())
+        emit setStatusMessage(tr("Write sent; readback required to verify the patch."));
+    else
+        emit setStatusMessage(tr("Patch write failed; patch remains unverified."));
+
+    emit setStatusProgress(0);
+    sysxIO->setDeviceReady(true);
+    emit connectedSignal();
 };
 
 void floorBoardDisplay::patchSelectSignal(int bank, int patch)
