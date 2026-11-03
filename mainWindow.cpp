@@ -40,6 +40,9 @@ mainWindow::mainWindow()
 {
     createActions();
     createMenus();
+    Preferences *startupPreferences = Preferences::Instance();
+    const QString showMenuBar = startupPreferences->getPreferences("Window", "MenuBar", "visible");
+    menuBar()->setVisible(showMenuBar != "false");
     floorBoard *fxsBoard = new floorBoard(this);
 
     /* Loads the stylesheet for the current platform if present */
@@ -186,6 +189,8 @@ void mainWindow::createActions()
     settingsAct->setShortcut(tr("Ctrl+P"));
     settingsAct->setWhatsThis(tr("FxFloorBoard Preferences<br>Select midi device, language,splash, directories"));
     connect(settingsAct, SIGNAL(triggered()), this, SLOT(settings()));
+    settingsAct->setShortcutContext(Qt::WindowShortcut);
+    addAction(settingsAct);
 
     uploadAct = new QAction(QIcon(":/images/upload.png"), tr("Upload patch to V-Guitars site"), this);
     uploadAct->setWhatsThis(tr("Upload any saved patch file to a shared patch library<br>via the internet."));
@@ -212,18 +217,6 @@ void mainWindow::createActions()
     whatsThisAct->setShortcut(tr("F1"));
     whatsThisAct->setWhatsThis(tr("ha..ha..ha..!!"));
     connect(whatsThisAct, SIGNAL(triggered()), this, SLOT(whatsThis()));
-
-    homepageAct = new QAction(QIcon(":/images/GT-10FxFloorBoard.png"), tr("GT-10 Fx FloorBoard &Webpage"), this);
-    homepageAct->setWhatsThis(tr("download Webpage for FxFloorBoard<br>find if the latest version is available."));
-    connect(homepageAct, SIGNAL(triggered()), this, SLOT(homepage()));
-
-    manualAct = new QAction(QIcon(":/images/manual.png"), tr("User Manual PDF"), this);
-    manualAct->setWhatsThis(tr("........"));
-    connect(manualAct, SIGNAL(triggered()), this, SLOT(manual()));
-
-    licenseAct = new QAction(QIcon(":/images/licence.png"), tr("&License"), this);
-    licenseAct->setWhatsThis(tr("licence agreement which you<br>have accepted by installing this software."));
-    connect(licenseAct, SIGNAL(triggered()), this, SLOT(license()));
 
     aboutAct = new QAction(QIcon(":/images/GT-10FxFloorBoard.png"), tr("&About FxFloorBoard"), this);
     aboutAct->setWhatsThis(tr("Show the application's About box"));
@@ -270,10 +263,6 @@ void mainWindow::createMenus()
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(helpAct);
     helpMenu->addAction(whatsThisAct);
-    helpMenu->addAction(homepageAct);
-    helpMenu->addSeparator();
-    helpMenu->addAction(manualAct);
-    helpMenu->addAction(licenseAct);
     helpMenu->addSeparator();
     helpMenu->addAction(aboutAct);
     helpMenu->addAction(aboutQtAct);
@@ -686,6 +675,7 @@ void mainWindow::settings()
         QString singleWindow = (dialog->windowSettings->singleWindowCheckBox->checkState())?QString("true"):QString("false");
         QString widgetHelp = (dialog->windowSettings->widgetsCheckBox->checkState())?QString("true"):QString("false");
         QString splash = (dialog->windowSettings->splashCheckBox->checkState())?QString("true"):QString("false");
+        QString menuBarVisible = (dialog->windowSettings->menuBarCheckBox->checkState())?QString("true"):QString("false");
         QString dBug = (dialog->midiSettings->dBugCheckBox->checkState())?QString("true"):QString("false");
         QString midiIn = QString::number(dialog->midiSettings->midiInCombo->currentIndex() - 1, 10); // -1 because there is a default entry at index 0
         QString midiOut = QString::number(dialog->midiSettings->midiOutCombo->currentIndex() - 1, 10);
@@ -712,6 +702,8 @@ void mainWindow::settings()
         preferences->setPreferences("Window", "Single", "bool", singleWindow);
         preferences->setPreferences("Window", "Widgets", "bool", widgetHelp);
         preferences->setPreferences("Window", "Splash", "bool", splash);
+        preferences->setPreferences("Window", "MenuBar", "visible", menuBarVisible);
+        menuBar()->setVisible(menuBarVisible == "true");
         preferences->savePreferences();
     };
 }
@@ -758,22 +750,6 @@ void mainWindow::summaryPatchList()
     summaryPatchList->show();
 }
 
-void mainWindow::homepage()
-{
-    //Preferences *preferences = Preferences::Instance();
-    QDesktopServices::openUrl(QUrl( "http://sourceforge.net/projects/fxfloorboard/" ));
-}
-
-void mainWindow::manual()
-{
-    //Preferences *preferences = Preferences::Instance();
-    QDesktopServices::openUrl(QUrl( "http://www.roland.com/products/en/GT-10/" ));
-}
-
-void mainWindow::license()
-{
-    QDesktopServices::openUrl(QUrl(":license.txt"));
-}
 
 void mainWindow::about()
 {
