@@ -65,9 +65,6 @@ public slots:
         void summaryPatchList();
         void help();
         void whatsThis();
-        void homepage();
-        void manual();
-        void license();
         void about();
 
 private:
@@ -98,9 +95,6 @@ private:
         QAction *summaryPatchListAct;
         QAction *helpAct;
         QAction *whatsThisAct;
-        QAction *homepageAct;
-        QAction *manualAct;
-        QAction *licenseAct;
         QAction *aboutAct;
         QAction *aboutQtAct;
 
