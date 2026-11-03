@@ -31,6 +31,23 @@
 #include "MidiTable.h"
 #include "globalVariables.h"
 
+// RtMidi ALSA names ports as "client:port clientId:portId", unlike the
+// flat "BOSS GT-10" name returned by the legacy backend.
+static int findGt10Port(const QList<QString> &devices)
+{
+    for (int i = 0; i < devices.size(); ++i)
+    {
+        const QString name = devices.at(i).trimmed();
+        if (name.compare("BOSS GT-10", Qt::CaseInsensitive) == 0 ||
+            name.compare("GT-10", Qt::CaseInsensitive) == 0 ||
+            name.startsWith("BOSS GT-10:", Qt::CaseInsensitive) ||
+            name.startsWith("GT-10:", Qt::CaseInsensitive))
+            return i;
+    }
+    return -1;
+}
+
+
 // Platform-dependent sleep routines.
 #ifdef Q_OS_WIN
   #include <windows.h>
@@ -791,10 +808,9 @@ void SysxIO::sendMidi(QString midiMsg)
 		
 		midiIO *midi = new midiIO();
 		QList<QString> midiOutDevices = midi->getMidiOutDevices();
-	  if ( midiOutDevices.contains("BOSS GT-10") )
-    {
-      midiOutPort = midiOutDevices.indexOf("BOSS GT-10");
-    }; 
+	  const int gt10OutPort = findGt10Port(midiOutDevices);
+        if (gt10OutPort >= 0)
+            midiOutPort = gt10OutPort; 
 
 		midi->sendMidi(midiMsg, midiOutPort);
 			 /*DeBugGING OUTPUT */
@@ -914,14 +930,12 @@ void SysxIO::sendSysx(QString sysxMsg)
 	midiIO *midi = new midiIO();
     QList<QString> midiInDevices = midi->getMidiInDevices();
 	  QList<QString> midiOutDevices = midi->getMidiOutDevices();
-	  if ( midiInDevices.contains("BOSS GT-10") )
-    {
-      midiInPort = midiInDevices.indexOf("BOSS GT-10");
-    };
-	  if ( midiOutDevices.contains("BOSS GT-10") )
-    {
-      midiOutPort = midiOutDevices.indexOf("BOSS GT-10");
-    };  
+	  const int gt10InPort = findGt10Port(midiInDevices);
+    if (gt10InPort >= 0)
+        midiInPort = gt10InPort;
+	  const int gt10OutPort = findGt10Port(midiOutDevices);
+    if (gt10OutPort >= 0)
+        midiOutPort = gt10OutPort;  
 	midi->sendSysxMsg(sysxMsg, midiOutPort, midiInPort);
 			 /*DeBugGING OUTPUT */
 	if(preferences->getPreferences("Midi", "DBug", "bool")=="true")
