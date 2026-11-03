@@ -55,7 +55,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 # The original Qt 4 code relies on QtGui transitively exposing widgets.
 # On Qt 5 Linux, make the QtWidgets umbrella available to legacy translation units.
-unix:greaterThan(QT_MAJOR_VERSION, 4): QMAKE_CXXFLAGS += -I$[QT_INSTALL_HEADERS]/QtWidgets -include QtWidgets
+unix:greaterThan(QT_MAJOR_VERSION, 4): QMAKE_CXXFLAGS += -include QtWidgets/QtWidgets
 
 #Platform dependent file(s)
 win32 {

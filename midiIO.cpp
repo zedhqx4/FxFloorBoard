@@ -62,9 +62,7 @@ static MidiBackendOut *createMidiOut(const std::string &clientName)
 
 int midiIO::bytesTotal = 0;
 int midiIO::bytesReceived = 0;
-int loopCount;
 bool midiIO::dataReceive = false;
-QString midiIO::msgType = "name";
 
 // Platform-dependent sleep routines.
 #ifdef Q_OS_WIN
@@ -77,7 +75,9 @@ QString midiIO::msgType = "name";
 
 midiIO::midiIO()
 {
-        this->midi = false; // Set this to false until required;
+        this->midi = false;
+        this->msgType = "name";
+        this->loopCount = 0; // Set this to false until required;
         /* Connect signals */
         SysxIO *sysxIO = SysxIO::Instance();
         QObject::connect(this, SIGNAL(setStatusSymbol(int)), sysxIO, SIGNAL(setStatusSymbol(int)));

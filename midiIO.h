@@ -62,7 +62,8 @@ private:
 	QList<QString> midiOutDevices;
 	QList<QString> midiInDevices;
 	
-	static QString msgType;
+	QString msgType;
+	int loopCount;
 	QString sysxBuffer;
 	QMutex sysxBufferMutex;
 	static bool dataReceive;
