@@ -40,11 +40,15 @@ mainWindow::mainWindow()
 {
     createActions();
     createMenus();
+
+    // Keep the menu bar in the application window (not in the desktop panel).
+    QMenuBar *bar = menuBar();
+    bar->setNativeMenuBar(false);
+
     floorBoard *fxsBoard = new floorBoard(this);
     Preferences *startupPreferences = Preferences::Instance();
-    const QString showMenuBar = startupPreferences->getPreferences("Window", "MenuBar", "visible");
-    menuBar()->setVisible(showMenuBar != "false");
-    floorBoard *fxsBoard = new floorBoard(this);
+    startupPreferences->getPreferences("Window", "MenuBar", "visible");
+    bar->setVisible(true);
 
     /* Loads the stylesheet for the current platform if present */
 #ifdef Q_OS_WIN
