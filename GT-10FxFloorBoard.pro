@@ -52,36 +52,47 @@ TRANSLATIONS = language_fr.ts \
 CODECFORTR = UTF-8
 
 DEPENDPATH += .
-QT += xml
-QT += widgets
-QT += printsupport
+QT += xml widgets printsupport
 
 #Platform dependent file(s)
-win32{
-        exists("C:/SDK/Lib/WinMM.Lib")
-                {	# <-- Change the path to WinMM.Lib here!
-                    LIBS += C:/SDK/Lib/WinMM.Lib	# <-- Change the path here also!
+win32 {
+        exists("C:/Progra~1/MS_SDKs/Windows/v6.1/Lib/WinMM.Lib") {
+                LIBS += C:/Progra~1/MS_SDKs/Windows/v6.1/Lib/WinMM.Lib
+        } else {
+                exists("c:/PROGRA~1/MICROS~3/VC/PLATFO~1/Lib/WinMM.Lib") {
+                        LIBS += c:/PROGRA~1/MICROS~3/VC/PLATFO~1/Lib/WinMM.Lib
+                } else {
+                        LIBS += .\\WinMM.Lib
                 }
+        }
+        SOURCES += ./windows/RtMidi.cpp
+        INCLUDEPATH += ./windows
         message(Including Windows specific headers and sources...)
 }
-linux-g++{
-        LIBS += -lasound
-        message("ALSA LIBRARIES SHOULD BE INSTALLED or ERROR will Occur")
-        message("Please install the ALSA Audio System packages if not present")
-        message(Including Linux specific headers and sources...)
+linux-g++ {
+        LIBS += -lasound -pthread
+        DEFINES += RTMIDI_API_ALSA
+        QMAKE_CXXFLAGS += -std=c++11 -pthread
+        HEADERS += ./third_party/rtmidi-6.1.0/RtMidi.h
+        SOURCES += ./third_party/rtmidi-6.1.0/RtMidi.cpp
+        INCLUDEPATH += ./third_party/rtmidi-6.1.0
+        message(Using RtMidi 6.1.0 with ALSA...)
 }
-linux-g++-64{
-        LIBS += -lasound
-        message("ALSA LIBRARIES SHOULD BE INSTALLED or ERROR will Occur")
-        message("Please install the ALSA Audio System packages if not present")
-        message(Including Linux specific headers and sources...)
+linux-g++-64 {
+        LIBS += -lasound -pthread
+        DEFINES += RTMIDI_API_ALSA
+        QMAKE_CXXFLAGS += -std=c++11 -pthread
+        HEADERS += ./third_party/rtmidi-6.1.0/RtMidi.h
+        SOURCES += ./third_party/rtmidi-6.1.0/RtMidi.cpp
+        INCLUDEPATH += ./third_party/rtmidi-6.1.0
+        message(Using RtMidi 6.1.0 with ALSA...)
 }
-macx{
+macx {
         LIBS += -framework CoreMidi -framework CoreAudio -framework CoreFoundation
-        message("X-Code LIBRARIES SHOULD BE INSTALLED or ERROR will Occur")
-        message("Please install the X-Code Audio System packages if not present")
-	ICON = GT-10FxFloorBoard.icns
-	message(Including Mac OS X specific headers and sources...)
+        SOURCES += ./macosx/RtMidi.cpp
+        INCLUDEPATH += ./macosx
+        ICON = GT-10FxFloorBoard.icns
+        message(Including Mac OS X specific headers and sources...)
 }
 ios{
         LIBS += -framework CoreMidi -framework CoreAudio -framework CoreFoundation
