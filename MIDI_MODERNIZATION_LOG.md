@@ -14,6 +14,9 @@ This log records the transport/build work on the GT-10 branch. The reference bra
 - `eb2c202`, `16b63e1`, `d0e621e` — Add explicit Qt 5 widget module includes to the remaining rename and summary dialog headers.
 - `b3ab5da` — Include `QtGlobal` before `QT_VERSION_CHECK` in the three summary headers so MOC can evaluate the Qt 4/5 guards.
 
+### Qt 5 platform API cleanup
+- `3f99abc`, `f1d0025` — Replace the deprecated Qt 5 `QDesktopWidget` screen lookup with `QGuiApplication::primaryScreen()` / `QScreen::availableGeometry()`. Center the window relative to the selected screen's actual desktop origin and apply the configured window dimensions instead of the widget's pre-show default size. This also removes a Qt 6 migration blocker without changing MIDI or device behavior.
+
 ### MIDI transport and SysEx handling
 - `eb94b49` — Switch Linux qmake builds from the old `linux/RtMidi.cpp` implementation to vendored RtMidi 6.1.0 with the explicit ALSA sequencer API. Keep the existing platform backends on Windows/macOS.
 - `eb94b49` — Pass the owning `midiIO` instance as RtMidi callback user data instead of allocating a new `midiIO`/QThread for every incoming message.
