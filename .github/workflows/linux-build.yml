@@ -1,0 +1,51 @@
+name: Linux build (Qt 5)
+
+on:
+  push:
+    branches:
+      - gt-10-midi-modernization
+  pull_request:
+    branches:
+      - gt-10-midi-modernization
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Ubuntu 22.04 / Qt 5 / ALSA
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            build-essential \
+            qtbase5-dev \
+            qtbase5-dev-tools \
+            qt5-qmake \
+            libasound2-dev
+
+      - name: Show toolchain
+        run: |
+          qmake -v
+          g++ --version
+          pkg-config --modversion alsa
+
+      - name: Configure with qmake
+        run: |
+          qmake GT-10FxFloorBoard.pro "QT+=widgets" CONFIG+=release
+
+      - name: Build
+        run: |
+          make --jobs=2
+
+      - name: Verify executable
+        run: |
+          test -x packager/GT-10FxFloorBoard
