@@ -111,7 +111,7 @@ floorBoardDisplay::floorBoardDisplay(QWidget *parent, QPoint pos)
   patchDialog->setGeometry(50, bottomOffset, 980, 25);
   patchDialog->setWhatsThis(tr("Clicking on this will open<br>a text dialog window<br>allowing user text input."));
   this->output = new customControlListMenu(this, "00", "00", "11", "right");
-  output->setGeometry(580, patchDisplayRowOffset, 180, 30);
+  output->setGeometry(580, patchDisplayRowOffset, 80, 30);
   output->setWhatsThis(tr("This is the Patch Mode setting of Output Select<br>this is only active if the SYSTEM setting<br>is set to Patch Mode."));
   this->catagory = new customControlListMenu(this, "00", "00", "10", "right");
   catagory->setGeometry(580, patchDisplayRowOffset+19, 300, 30);
