@@ -167,12 +167,12 @@ int main(int argc, char **argv)
 	else
 	{
 		splash->showStatusMessage(QObject::tr("Centering main window..."));
+		windowHeight = preferences->getPreferences("Window", "Size", "minheight").toInt(&ok, 10);
+
 		QScreen *primaryScreen = QGuiApplication::primaryScreen();
 		QRect availableGeometry = primaryScreen
 			? primaryScreen->availableGeometry()
 			: QRect(0, 0, windowWidth, windowHeight);
-
-		windowHeight = preferences->getPreferences("Window", "Size", "minheight").toInt(&ok, 10);
 
 		const int x = availableGeometry.x()
 			+ (availableGeometry.width() - windowWidth) / 2;
