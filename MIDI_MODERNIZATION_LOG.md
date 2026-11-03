@@ -46,3 +46,6 @@ This log records the transport/build work on the GT-10 branch. The reference bra
 - This validates the Linux build and link, not physical MIDI communication.
 - No physical GT-10 read/write test has been performed by CI. Device-level validation remains required, starting with identity, patch-name, and read-only patch/System requests.
 - Temporary patch-buffer writes and System writes now use automatic readback comparison in code; CI does not exercise a physical device. Permanent patch-memory writes remain **unverified** after send and need their own address-specific readback path. No write test should be treated as successful merely because the send operation returned.
+
+- `99ccf58` — Verify permanent user-patch writes by requesting the exact bank/patch again, comparing the compact bulk-reply payload, and emitting a completion signal only after the comparison.
+- `f7e9bcc` — Keep temporary-buffer write UI state pending until the temporary-buffer readback completes.

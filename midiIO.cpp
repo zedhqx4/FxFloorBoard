@@ -349,9 +349,9 @@ void midiIO::callbackMsg(QString rxData)
         if (!rxData.startsWith("F0410000002F12"))
             return;
 
-        // A patch-name read is a single frame: require the exact requested address.
-        // Patch/system dumps are multi-frame transfers and legitimately advance addresses.
-        if (msgType == "name")
+        // Name and patch replies must match the exact requested memory address.
+        // System dumps are multi-frame transfers and legitimately advance addresses.
+        if (msgType == "name" || msgType == "patch")
         {
             const QString requestedAddress = sysxOutMsg.mid(sysxAddressOffset * 2, 8);
             const QString replyAddress = rxData.mid(sysxAddressOffset * 2, 8);
@@ -537,7 +537,7 @@ void midiIO::run()
                 emit replyMsg(this->sysxInMsg);
                 emit setStatusSymbol(1);
                 emit setStatusProgress(0);
-                
+                
                 };
 };
 
