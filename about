@@ -2,9 +2,10 @@
 Editor for the BOSS GT-10 Guitar Multi-Effects Processor<br>
 <br>
 GT-10 version by<br>
-© Copyright 2007~2014 Colin Willcocks gumtownbassman@yahoo.com <br>
+Modernization and maintenance: sagex85<br>
+Â© Copyright 2007~2014 Colin Willcocks gumtownbassman@yahoo.com <br>
 based on the original fxfloorboard source written by<br>
-© Copyright 2005~2007 Uco Mesdag <br>
+Â© Copyright 2005~2007 Uco Mesdag <br>
 (GNU General Public License)<br>	
 RtMidi: realtime MIDI i/o C++ classes<br>
 Copyright (c) 2003~2014 Gary P. Scavone<br>		
