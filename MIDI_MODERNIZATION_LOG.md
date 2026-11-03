@@ -37,19 +37,17 @@ This log records the transport/build work on the GT-10 branch. The reference bra
 - `de1de54` — Keep permanent patch writes explicitly unverified after the send; the UI no longer claims synchronization merely because the write thread finished.
 - `f27f4f4` — Verify writes to the temporary patch buffer by reading address `0x60:00` back with `patchRequest(0, 0)`, checking DT1 checksums and comparing payload bytes before setting sync true.
 - `bb09a78` — Verify System writes by requesting the full System area after transmission and comparing the reconstructed DT1 payload with the expected System data before setting sync true.
+- `99ccf58` — Verify permanent user-patch writes by requesting the exact bank/patch again, comparing the compact bulk-reply payload, and emitting a completion signal only after the comparison.
+- `f7e9bcc` — Keep temporary-buffer UI state pending until the explicit readback result arrives, rather than reporting completion when the send starts.
+- `e711bc6` — Require patch-name and patch-readback SysEx messages to match the requested Roland memory address.
+- `0919d12` — Remove the obsolete display-level send-completion reset slot; the UI now responds to readback result signals.
 
 ## Validation status
 
 - **Linux Qt 5 / ALSA CI passed** for commit `b3ab5da`: qmake configuration, full build, and the executable verification step all succeeded. Run: https://github.com/zedhqx4/FxFloorBoard/actions/runs/41669746927
 - **Linux Qt 5 / ALSA CI also passed** for commit `f27f4f4`, including the full build and executable check. Run: https://github.com/zedhqx4/FxFloorBoard/actions/runs/41670981644
-- The System-write readback verification in `bb09a78` is the current code under CI review; do not mark it build-validated until that run completes.
+- Linux Qt 5 / ALSA CI passed for commit `99ccf58`, which adds permanent patch-memory readback verification. Run: https://github.com/zedhqx4/FxFloorBoard/actions/runs/41672969722
 - This validates the Linux build and link, not physical MIDI communication.
 - No physical GT-10 read/write test has been performed by CI. Device-level validation remains required, starting with identity, patch-name, and read-only patch/System requests.
-- Temporary patch-buffer writes and System writes now use automatic readback comparison in code; CI does not exercise a physical device. Permanent patch-memory writes remain **unverified** after send and need their own address-specific readback path. No write test should be treated as successful merely because the send operation returned.
+- Temporary patch-buffer writes, System writes, and permanent user-patch writes now use automatic readback comparison in code. The UI does not mark these writes synchronized merely because bytes were sent. CI validates compilation only; actual device-level readback still needs testing on a physical GT-10.
 
-- `99ccf58` — Verify permanent user-patch writes by requesting the exact bank/patch again, comparing the compact bulk-reply payload, and emitting a completion signal only after the comparison.
-- `f7e9bcc` — Keep temporary-buffer write UI state pending until the temporary-buffer readback completes.
-
-- `f7e9bcc` — Make the temporary-buffer UI wait for the explicit readback result signal; remove its early “write done” visual state.
-- `e711bc6` — Require patch readback frames to match the exact requested Roland address, in addition to model/header checks.
-- `TODO` — Remove the unused display-level send-completion reset slot; readback-specific signals own UI completion now.
