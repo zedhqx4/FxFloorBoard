@@ -115,6 +115,7 @@ private slots:
 	void resetDevice(QString sysxMsg);
 	void checkPatchChange(QString name);
 	void systemReply(QString replyMsg);
+	void verifyPatchBufferReply(QString replyMsg);
 
 signals:
 	void sysxReply(QString sysxMsg);
@@ -164,6 +165,8 @@ private:
 	QString xml_area;
 	QString errorType;
 	QString errorMsg;
+	bool verifyBufferReadback;
+	QString pendingBufferExpectedData;
 };
 
 #endif // SYSXIO_H

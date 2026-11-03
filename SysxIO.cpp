@@ -36,6 +36,58 @@
 #include "MidiTable.h"
 #include "globalVariables.h"
 
+// Extract the data bytes from concatenated GT-10 DT1 frames.
+// Text-display frames (command 0x1B) are excluded because sendSysxMsg() excludes them.
+static QString gt10SysxPayload(const QString &messages, bool validateChecksums)
+{
+    if (messages.isEmpty() || (messages.size() % 2) != 0)
+        return QString();
+
+    const QString dataHeader = "F0410000002F12";
+    const QString textHeader = "F0410000001B12";
+    QString payload;
+    bool foundDataFrame = false;
+    int cursor = 0;
+    while (cursor < messages.size())
+    {
+        const QString header = messages.mid(cursor, 14);
+        if (header != dataHeader && header != textHeader)
+            return QString();
+
+        const int frameEnd = messages.indexOf("F7", cursor + 14);
+        if (frameEnd < 0 || ((frameEnd - cursor + 2) % 2) != 0)
+            return QString();
+
+        const int checksumTextOffset = frameEnd - 2;
+        const int dataTextOffset = cursor + (sysxDataOffset * 2);
+        if (checksumTextOffset < dataTextOffset)
+            return QString();
+
+        int dataSum = 0;
+        for (int offset = cursor + (checksumOffset * 2); offset < checksumTextOffset; offset += 2)
+        {
+            bool ok = false;
+            const int value = messages.mid(offset, 2).toInt(&ok, 16);
+            if (!ok || value < 0 || value > 0x7F)
+                return QString();
+            dataSum += value;
+        }
+
+        if (validateChecksums && header == dataHeader &&
+            messages.mid(checksumTextOffset, 2) != MidiTable::Instance()->getCheckSum(dataSum))
+            return QString();
+
+        if (header == dataHeader)
+        {
+            foundDataFrame = true;
+            payload.append(messages.mid(dataTextOffset, checksumTextOffset - dataTextOffset));
+        }
+        cursor = frameEnd + 2;
+    }
+    return foundDataFrame ? payload : QString();
+}
+
+
 // A GT-10 patch-name reply is a Roland DT1 SysEx frame containing
 // 16 name bytes. Verify the model header, framing and checksum before
 // treating the payload as a patch name.
@@ -94,6 +146,7 @@ SysxIO::SysxIO()
 	this->setDevice(false);
 	this->setDeviceReady(true);
 	this->setSyncStatus(false);
+	this->verifyBufferReadback = false;
 	this->setNoError(true);
 	this->setBank(0);
 	this->setPatch(0);
@@ -524,21 +577,55 @@ int SysxIO::getSourceValue(QString area, QString hex1, QString hex2, QString hex
 **********************************************************************/
 void SysxIO::resetDevice(QString replyMsg)
 {
-	Q_UNUSED(replyMsg);
-	if(this->sendSpooler.size() == 0)
-	{
-		QObject::disconnect(this, SIGNAL(sysxReply(QString)),
-			this, SLOT(resetDevice(QString)));
+    Q_UNUSED(replyMsg);
+    if (!this->sendSpooler.isEmpty())
+    {
+        processSpooler();
+        return;
+    }
 
-		this->setDeviceReady(true);	// Free the device after asynchronous worker completion.
-		emit setStatusSymbol(1);
-		emit setStatusProgress(0);
-		emit setStatusMessage(tr("Ready"));
-	}
-	else
-	{
-		processSpooler();
-	};
+    QObject::disconnect(this, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString)));
+    if (this->verifyBufferReadback)
+    {
+        this->verifyBufferReadback = false;
+        QObject::disconnect(this, SIGNAL(sysxReply(QString)), this, SLOT(verifyPatchBufferReply(QString)));
+        QObject::connect(this, SIGNAL(sysxReply(QString)), this, SLOT(verifyPatchBufferReply(QString)));
+        emit setStatusSymbol(3);
+        emit setStatusMessage(tr("Verify patch buffer"));
+        MidiTable *midiTable = MidiTable::Instance();
+        sendSysx(midiTable->patchRequest(0, 0)); // Read the temporary patch buffer at 0x60:00.
+        return;
+    }
+
+    this->setDeviceReady(true);
+    emit setStatusSymbol(1);
+    emit setStatusProgress(0);
+    emit setStatusMessage(tr("Ready"));
+};
+
+
+void SysxIO::verifyPatchBufferReply(QString replyMsg)
+{
+    QObject::disconnect(this, SIGNAL(sysxReply(QString)), this, SLOT(verifyPatchBufferReply(QString)));
+    const QString actualPayload = gt10SysxPayload(replyMsg, true);
+    const bool verified = !this->pendingBufferExpectedData.isEmpty() &&
+                          !actualPayload.isEmpty() &&
+                          actualPayload == this->pendingBufferExpectedData;
+    if (verified)
+    {
+        setSyncStatus(true);
+        emit setStatusdBugMessage(tr("GT-10 temporary patch buffer readback verified"));
+    }
+    else
+    {
+        setSyncStatus(false);
+        emit errorSignal(tr("Patch Buffer Verification"), tr("GT-10 readback did not match the patch data sent"));
+    }
+    this->pendingBufferExpectedData.clear();
+    setDeviceReady(true);
+    emit setStatusSymbol(1);
+    emit setStatusProgress(0);
+    emit setStatusMessage(verified ? tr("Patch buffer verified") : tr("Patch buffer verification failed"));
 };
 
 /************************ processSpooler() ******************************
@@ -1383,8 +1470,18 @@ void SysxIO::writeToBuffer()
 		}; 
 	}; 
 	setNoError(true);
-	setSyncStatus(false); // Keep this patch unverified until readback succeeds.
+this->pendingBufferExpectedData = gt10SysxPayload(sysxMsg, false);
+if (this->pendingBufferExpectedData.isEmpty())
+{
+    setSyncStatus(false);
+    emit errorSignal(tr("Patch Buffer Verification"), tr("could not prepare patch data for readback verification"));
+    setDeviceReady(true);
+    return;
+}
+this->verifyBufferReadback = true;
+setSyncStatus(false); // Keep this patch unverified until readback succeeds.
 	
+	QObject::disconnect(this, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString)));
 	QObject::connect(this, SIGNAL(sysxReply(QString)),	// Connect the result signal 
 		this, SLOT(resetDevice(QString)));					// to a slot that will reset the device after sending.
 	sendSysx(sysxMsg);	// Send the data.
