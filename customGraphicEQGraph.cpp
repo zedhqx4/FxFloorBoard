@@ -211,7 +211,7 @@ unsigned short customGraphicEQGraph::Level (void) const
 
 void customGraphicEQGraph::paintEvent ( QPaintEvent *pPaintEvent )
 {
-    QPixmap image = QPixmap(":images/EQ_graph.png");
+    QPixmap image = QPixmap(":/images/EQ_graph.png");
     QRectF target(0.0, 0.0, image.width()*95/100, image.height()*43/100);
     QRectF source(0.0, 0.0, image.width(), image.height());
 
