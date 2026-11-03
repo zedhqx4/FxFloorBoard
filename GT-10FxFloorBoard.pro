@@ -53,6 +53,10 @@ QT += xml
 # Qt 5 moved widget classes from QtGui into the QtWidgets module.
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
+# The original Qt 4 code relies on QtGui transitively exposing widgets.
+# On Qt 5 Linux, make the QtWidgets umbrella available to legacy translation units.
+unix:greaterThan(QT_MAJOR_VERSION, 4): QMAKE_CXXFLAGS += -include QtWidgets
+
 #Platform dependent file(s)
 win32 {
         exists("C:/Progra~1/MS_SDKs/Windows/v6.1/Lib/WinMM.Lib") {	# <-- Change the path to WinMM.Lib here!
