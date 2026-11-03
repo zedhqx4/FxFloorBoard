@@ -23,7 +23,7 @@
  
 /* CUSTOM QTREEWIDGET STYLE */
 bankTreeList#banklist{
-background-color rgb(0,1,62);
+background-color: rgb(0,1,62);
 }
 QTreeWidget#banklist {
 font-family: Arial;
