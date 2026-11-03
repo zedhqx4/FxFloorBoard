@@ -1055,26 +1055,28 @@ void SysxIO::sendMidi(QString midiMsg)
 *************************************************************************************/
 void SysxIO::finishedSending()
 {
-	emit isFinished();
+    // Snapshot the completed operation before isFinished() can trigger another
+    // request and reset the error state or reserve the device again.
+    const bool operationSucceeded = noError();
+    const bool deviceIsReady = deviceReady();
 
-    // Writes and verified reads keep the device reserved until resetDevice() or
-    // a readback slot releases it. Do not report "Ready" while that is pending.
-    if (!deviceReady())
-        return;
-
-    emit setStatusProgress(0);
-    if (noError())
+    if (deviceIsReady)
     {
-        emit setStatusSymbol(1);
-        emit setStatusMessage(tr("Ready"));
-    }
-    else
-    {
-        emit setStatusSymbol(0);
-        emit setStatusMessage(tr("MIDI operation failed; check diagnostics"));
+        emit setStatusProgress(0);
+        if (operationSucceeded)
+        {
+            emit setStatusSymbol(1);
+            emit setStatusMessage(tr("Ready"));
+        }
+        else
+        {
+            emit setStatusSymbol(0);
+            emit setStatusMessage(tr("MIDI operation failed; check diagnostics"));
+        }
     }
 
-	//this->namePatchChange();
+    // Emit last so a follow-up request can publish its own status afterwards.
+    emit isFinished();
 };
 
 /***************************** requestPatchChange() *************************
