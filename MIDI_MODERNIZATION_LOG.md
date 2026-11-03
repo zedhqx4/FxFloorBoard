@@ -22,11 +22,15 @@ This log records the transport/build work on the GT-10 branch. The reference bra
 - `63936f8` — Match GT-10 ports using both the legacy flat name and RtMidi ALSA's `client:port clientId:portId` name format.
 - `5fa57bc` — Schedule each `midiIO` worker for deletion only after the real `QThread::finished()` signal; also release workers that cannot start because no output port is configured.
 - `7432063` — Replace the two remaining `QString::toAscii()` uses in MIDI preference conversion with `toLatin1()`.
+- `dbda7c0` — Make `msgType` and `loopCount` instance-owned, so concurrent `midiIO` workers cannot overwrite each other's expected response type or timeout.
+- `aed89bf` — Set the Linux ALSA input decoder buffer to 4096 bytes before opening the port, sized for the GT-10 patch/system reply payloads.
+- `8265790` — After the allowed retries, discard incomplete replies instead of forwarding partial data to the SysEx parser.
+- `cbaf127` — Remove the fragile global QtWidgets preinclude and add the remaining explicit Qt 5 widget headers to `customLabelDisplay.h` and `customKnobRange.h`.
 
 ## Validation status
 
 - qmake configuration for the Linux Qt 5 CI job has succeeded in the observed runs.
 - Earlier build runs reached the Qt compatibility errors listed above; those were corrected incrementally.
-- The build for commit `57220c0` and the newer build for `63936f8` are the current validation runs. Their final results must be checked before marking the Linux build as passing.
+- qmake configuration succeeds for the current branch. The latest CI run for `cbaf127` is compiling with the global preinclude removed; its result must be checked before marking the Linux build as passing.
 - No physical GT-10 read/write test has been performed by CI. Device-level validation remains required, starting with identity and read-only patch/name requests.
 - No patch write test should be treated as validated until the written test patch is read back from the GT-10 and compared.
