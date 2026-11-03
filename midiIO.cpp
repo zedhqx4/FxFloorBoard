@@ -344,9 +344,20 @@ void midiIO::callbackMsg(QString rxData)
         if (rxData != idReplyPatern)
             return;
     }
-    else if (!rxData.startsWith("F0410000002F12"))
+    else
     {
-        return;
+        if (!rxData.startsWith("F0410000002F12"))
+            return;
+
+        // A patch-name read is a single frame: require the exact requested address.
+        // Patch/system dumps are multi-frame transfers and legitimately advance addresses.
+        if (msgType == "name")
+        {
+            const QString requestedAddress = sysxOutMsg.mid(sysxAddressOffset * 2, 8);
+            const QString replyAddress = rxData.mid(sysxAddressOffset * 2, 8);
+            if (requestedAddress.size() != 8 || replyAddress != requestedAddress)
+                return;
+        }
     }
 
     QMutexLocker locker(&sysxBufferMutex);
