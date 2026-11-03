@@ -1175,12 +1175,20 @@ void floorBoardDisplay::writeSignal(bool)
 void floorBoardDisplay::writeToBuffer()
 {
         SysxIO *sysxIO = SysxIO::Instance();
+        QObject::disconnect(sysxIO, SIGNAL(patchBufferWriteVerified(bool)), this, SLOT(patchBufferWriteVerified(bool)));
+        QObject::connect(sysxIO, SIGNAL(patchBufferWriteVerified(bool)), this, SLOT(patchBufferWriteVerified(bool)));
         sysxIO->writeToBuffer();
-
-        this->writeButton->setBlink(false);	// Sync so we stop blinking the button
-        this->writeButton->setValue(false);	// and activate the write button.
 };
 
+void floorBoardDisplay::patchBufferWriteVerified(bool verified)
+{
+        SysxIO *sysxIO = SysxIO::Instance();
+        QObject::disconnect(sysxIO, SIGNAL(patchBufferWriteVerified(bool)), this, SLOT(patchBufferWriteVerified(bool)));
+        this->writeButton->setBlink(!verified);
+        this->writeButton->setValue(false);
+        emit setStatusMessage(verified ? tr("Temporary patch buffer verified by readback.") : tr("Temporary patch buffer could not be verified."));
+        emit setStatusProgress(0);
+};
 void floorBoardDisplay::writeToMemory()
 {
         SysxIO *sysxIO = SysxIO::Instance();

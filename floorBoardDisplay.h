@@ -72,6 +72,7 @@ public slots:
         void autoConnectionResult(QString);
         void resetDevice(QString replyMsg);
         void patchMemoryWriteVerified(bool verified);
+        void patchBufferWriteVerified(bool verified);
         void patchSelectSignal(int bank, int patch);
         void blinkSellectedPatch(bool active = true);
         void patchLoadSignal(int bank, int patch);

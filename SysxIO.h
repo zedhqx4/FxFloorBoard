@@ -121,6 +121,7 @@ private slots:
 signals:
 	void sysxReply(QString sysxMsg);
 	void patchMemoryWriteVerified(bool verified);
+	void patchBufferWriteVerified(bool verified);
 	void patchName(QString name);
 	void isFinished();
 	void isChanged();

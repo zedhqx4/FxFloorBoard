@@ -729,6 +729,7 @@ void SysxIO::verifyPatchBufferReply(QString replyMsg)
     else
     {
         emit setStatusMessage(verified ? tr("Patch buffer verified") : tr("Patch buffer verification failed"));
+        emit patchBufferWriteVerified(verified);
     }
 };
 
@@ -1640,6 +1641,7 @@ if (this->pendingBufferExpectedData.isEmpty())
     setSyncStatus(false);
     emit errorSignal(tr("Patch Buffer Verification"), tr("could not prepare patch data for readback verification"));
     setDeviceReady(true);
+    emit patchBufferWriteVerified(false);
     return;
 }
 this->verifyBufferReadback = true;
