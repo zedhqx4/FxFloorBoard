@@ -79,24 +79,24 @@ win32 {
 	message(Including Windows specific headers and sources...)
 }
 linux-g++ {
-        LIBS += -lasound
-	message("ALSA LIBRARIES SHOULD BE INSTALLED or ERROR will Occur") 
-	message("Please install the ALSA Audio System packages if not present") 	
- 
-	 HEADERS += 
-	 SOURCES += ./linux/RtMidi.cpp 
-	 INCLUDEPATH += ./linux
-	message(Including Linux specific headers and sources...)
+    # Use upstream RtMidi 6.1.0 with its ALSA sequencer backend.
+    LIBS += -lasound -pthread
+    DEFINES += RTMIDI_API_ALSA
+    QMAKE_CXXFLAGS += -std=c++11 -pthread
+    HEADERS += ./third_party/rtmidi-6.1.0/RtMidi.h
+    SOURCES += ./third_party/rtmidi-6.1.0/RtMidi.cpp
+    INCLUDEPATH += ./third_party/rtmidi-6.1.0
+    message(Using vendored RtMidi 6.1.0 with ALSA...)
 }
 linux-g++-64 {
-        LIBS += -lasound
-	message("ALSA LIBRARIES SHOULD BE INSTALLED or ERROR will Occur") 
-	message("Please install the ALSA Audio System packages if not present") 	
- 
-	 HEADERS += 
-	 SOURCES += ./linux/RtMidi.cpp 
-	 INCLUDEPATH += ./linux
-	message(Including Linux specific headers and sources...)
+    # Use upstream RtMidi 6.1.0 with its ALSA sequencer backend.
+    LIBS += -lasound -pthread
+    DEFINES += RTMIDI_API_ALSA
+    QMAKE_CXXFLAGS += -std=c++11 -pthread
+    HEADERS += ./third_party/rtmidi-6.1.0/RtMidi.h
+    SOURCES += ./third_party/rtmidi-6.1.0/RtMidi.cpp
+    INCLUDEPATH += ./third_party/rtmidi-6.1.0
+    message(Using vendored RtMidi 6.1.0 with ALSA...)
 }
 macx {
 	LIBS += -framework CoreMidi -framework CoreAudio -framework CoreFoundation

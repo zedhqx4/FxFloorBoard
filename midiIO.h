@@ -28,6 +28,7 @@
 #include <QString>
 #include <QStringList>
 #include <QList>
+#include <QMutex>
 
 class midiIO: public QThread
 {
@@ -62,7 +63,8 @@ private:
 	QList<QString> midiInDevices;
 	
 	static QString msgType;
-	static QString sysxBuffer;
+	QString sysxBuffer;
+	QMutex sysxBufferMutex;
 	static bool dataReceive;
 	static int bytesTotal;
 	static int bytesReceived;
