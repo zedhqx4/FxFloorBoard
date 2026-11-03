@@ -46,8 +46,6 @@ mainWindow::mainWindow()
     bar->setNativeMenuBar(false);
 
     floorBoard *fxsBoard = new floorBoard(this);
-    Preferences *startupPreferences = Preferences::Instance();
-    startupPreferences->getPreferences("Window", "MenuBar", "visible");
     bar->setVisible(true);
 
     /* Loads the stylesheet for the current platform if present */
