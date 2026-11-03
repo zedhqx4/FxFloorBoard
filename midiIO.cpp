@@ -526,8 +526,7 @@ void midiIO::run()
                 emit replyMsg(this->sysxInMsg);
                 emit setStatusSymbol(1);
                 emit setStatusProgress(0);
-                
-                emit setStatusProgress(0);
+                
                 };
 };
 
