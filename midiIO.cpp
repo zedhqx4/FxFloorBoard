@@ -574,10 +574,19 @@ void midiIO::sendSysxMsg(QString sysxOutMsg, int midiOutPort, int midiInPort)
         this->midi = false;
         Preferences *preferences = Preferences::Instance();// Load the preferences.
         QString midiOut = preferences->getPreferences("Midi", "MidiOut", "device");
-  if(midiOut!="") {start();} else {
-  emit setStatusSymbol(0);
-  emit setStatusMessage(tr("no midi device set"));
-  emit replyMsg("");};
+  if(midiOut!="")
+{
+    // Defer destruction until QThread::run() has actually returned.
+    QObject::connect(this, SIGNAL(finished()), this, SLOT(deleteLater()));
+    start();
+}
+else
+{
+    emit setStatusSymbol(0);
+    emit setStatusMessage(tr("no midi device set"));
+    emit replyMsg("");
+    deleteLater();
+};
 
 };
 
@@ -591,8 +600,16 @@ void midiIO::sendMidi(QString midiMsg, int midiOutPort)
         this->midi = true;
   Preferences *preferences = Preferences::Instance();// Load the preferences.
         QString midiOut = preferences->getPreferences("Midi", "MidiOut", "device");
-  if(midiOut!="") {start();} else {
-  emit setStatusSymbol(0);
-  emit setStatusMessage(tr("no midi device set"));   };
+  if(midiOut!="")
+{
+    QObject::connect(this, SIGNAL(finished()), this, SLOT(deleteLater()));
+    start();
+}
+else
+{
+    emit setStatusSymbol(0);
+    emit setStatusMessage(tr("no midi device set"));
+    deleteLater();
+};
 };
 
