@@ -39,20 +39,36 @@ typedef RtMidiOut MidiBackendOut;
 typedef RtError MidiBackendError;
 #endif
 
-static MidiBackendIn *createMidiIn(const std::string &clientName)
+#ifdef Q_OS_LINUX
+static void midiBackendErrorCallback(rt::midi::RtMidiError::Type type, const std::string &errorText, void *userData)
+{
+    Q_UNUSED(type);
+    midiIO *owner = static_cast<midiIO *>(userData);
+    if (owner)
+        owner->reportMidiBackendError(QString::fromStdString(errorText));
+}
+#endif
+
+static MidiBackendIn *createMidiIn(const std::string &clientName, midiIO *owner)
 {
 #ifdef Q_OS_LINUX
-    return new rt::midi::RtMidiIn(rt::midi::RtMidi::LINUX_ALSA, clientName);
+    MidiBackendIn *midiin = new rt::midi::RtMidiIn(rt::midi::RtMidi::LINUX_ALSA, clientName);
+    midiin->setErrorCallback(&midiBackendErrorCallback, owner);
+    return midiin;
 #else
+    Q_UNUSED(owner);
     return new MidiBackendIn(clientName);
 #endif
 }
 
-static MidiBackendOut *createMidiOut(const std::string &clientName)
+static MidiBackendOut *createMidiOut(const std::string &clientName, midiIO *owner)
 {
 #ifdef Q_OS_LINUX
-    return new rt::midi::RtMidiOut(rt::midi::RtMidi::LINUX_ALSA, clientName);
+    MidiBackendOut *midiout = new rt::midi::RtMidiOut(rt::midi::RtMidi::LINUX_ALSA, clientName);
+    midiout->setErrorCallback(&midiBackendErrorCallback, owner);
+    return midiout;
 #else
+    Q_UNUSED(owner);
     return new MidiBackendOut(clientName);
 #endif
 }
@@ -75,6 +91,9 @@ midiIO::midiIO()
         this->midi = false;
         this->msgType = "name";
         this->loopCount = 0; // Set this to false until required;
+#ifdef Q_OS_LINUX
+        this->midiBackendErrorOccurred.store(false);
+#endif
         /* Connect signals */
         SysxIO *sysxIO = SysxIO::Instance();
         QObject::connect(this, SIGNAL(setStatusSymbol(int)), sysxIO, SIGNAL(setStatusSymbol(int)));
@@ -96,7 +115,7 @@ void midiIO::queryMidiOutDevices()
          std::string portName;
          unsigned int outPorts;
          const std::string clientName = "FxFloorBoard";
-  try { midiout = createMidiOut(clientName); }   /* MidiBackendOut constructor */
+  try { midiout = createMidiOut(clientName, this); }   /* MidiBackendOut constructor */
   catch (MidiBackendError &error) {
     error.printMessage();
     emit errorSignal(tr("Midi Output Error"), tr("port error"));
@@ -153,7 +172,7 @@ void midiIO::queryMidiInDevices()
          std::string portName;
          unsigned int inPorts;
          const std::string clientName = "FxFloorBoard";
-  try { midiin = createMidiIn(clientName); }    /* MidiBackendIn constructor */
+  try { midiin = createMidiIn(clientName, this); }    /* MidiBackendIn constructor */
   catch (MidiBackendError &error) {
     error.printMessage();
     emit errorSignal(tr("Midi Input Error"), tr("port error"));
@@ -209,7 +228,7 @@ void midiIO::sendSyxMsg(QString sysxOutMsg, int midiOutPort)
     const std::string clientName = "FxFloorBoard";
     try
     {
-        midiMsgOut = createMidiOut(clientName);
+        midiMsgOut = createMidiOut(clientName, this);
         if (midiMsgOut->getPortCount() < 1)
         {
             emit errorSignal(tr("Syx Output Error"), tr("no MIDI output device available"));
@@ -279,7 +298,7 @@ void midiIO::sendMidiMsg(QString sysxOutMsg, int midiOutPort)
     const std::string clientName = "FxFloorBoard";
     try
     {
-        midiMsgOut = createMidiOut(clientName);
+        midiMsgOut = createMidiOut(clientName, this);
         if (midiMsgOut->getPortCount() < 1)
         {
             emit errorSignal(tr("Midi Output Error"), tr("no MIDI output device available"));
@@ -347,6 +366,14 @@ void midicallback(double deltatime, std::vector<unsigned char> *message, void *u
     midi->callbackMsg(rxData);
 };
 
+void midiIO::reportMidiBackendError(QString errorMessage)
+{
+#ifdef Q_OS_LINUX
+    this->midiBackendErrorOccurred.store(true);
+#endif
+    emit errorSignal(tr("MIDI Backend Error"), errorMessage);
+};
+
 void midiIO::callbackMsg(QString rxData)
 {
     // Accept only the reply family that matches this request. This prevents
@@ -396,7 +423,7 @@ void midiIO::receiveMsg(int midiInPort)
     const std::string clientName = "FxFloorBoard";
     try
     {
-        midiin = createMidiIn(clientName);
+        midiin = createMidiIn(clientName, this);
         if (midiin->getPortCount() < 1) goto cleanup;
 #ifdef Q_OS_LINUX
         // GT-10 patch and system replies exceed RtMidi's 1 KiB default input buffer.
@@ -415,6 +442,10 @@ void midiIO::receiveMsg(int midiInPort)
         int receivedBytes = 0;
         while (elapsed < loopCount && receivedBytes < count)
         {
+#ifdef Q_OS_LINUX
+            if (this->midiBackendErrorOccurred.load())
+                break;
+#endif
             SLEEP(5);
             {
                 QMutexLocker locker(&sysxBufferMutex);
@@ -443,6 +474,10 @@ cleanup:
         QMutexLocker locker(&sysxBufferMutex);
         this->sysxInMsg = this->sysxBuffer;
     }
+#ifdef Q_OS_LINUX
+    if (this->midiBackendErrorOccurred.load())
+        this->sysxInMsg.clear();
+#endif
     delete midiin;
 };
 /**************************** run() **************************************
@@ -509,8 +544,11 @@ void midiIO::run()
 
                     int receivedBytes = this->sysxInMsg.size() / 2;
                     Preferences *preferences = Preferences::Instance();
-                    const bool mayRetry =
+                    bool mayRetry =
                         preferences->getPreferences("Midi", "DBug", "bool") != "true";
+#ifdef Q_OS_LINUX
+                    mayRetry = mayRetry && !this->midiBackendErrorOccurred.load();
+#endif
                     if (receivedBytes != count && repeat < 3 && mayRetry)
                     {
                         emit setStatusdBugMessage(tr("re-trying data request"));

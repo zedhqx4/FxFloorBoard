@@ -29,6 +29,9 @@
 #include <QStringList>
 #include <QList>
 #include <QMutex>
+#ifdef Q_OS_LINUX
+#include <atomic>
+#endif
 
 class midiIO: public QThread
 {
@@ -40,6 +43,7 @@ public:
 	void sendSysxMsg(QString sysxOutMsg, int midiOutport, int midiInPort);
 	void sendMidi(QString midiMsg, int midiOutport);
 	void callbackMsg(QString rxData);
+	void reportMidiBackendError(QString errorMessage);
 	QList<QString> getMidiOutDevices();
 	QList<QString> getMidiInDevices();
 		
@@ -66,6 +70,9 @@ private:
 	int loopCount;
 	QString sysxBuffer;
 	QMutex sysxBufferMutex;
+#ifdef Q_OS_LINUX
+	std::atomic<bool> midiBackendErrorOccurred;
+#endif
 	int midiOutPort;
 	int midiInPort;
 	QString sysxOutMsg;
