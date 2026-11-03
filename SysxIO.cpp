@@ -31,6 +31,31 @@
 #include "MidiTable.h"
 #include "globalVariables.h"
 
+// A GT-10 patch-name reply is a Roland DT1 SysEx frame containing
+// 16 name bytes. Verify the model header, framing and checksum before
+// treating the payload as a patch name.
+static bool isValidPatchNameReply(const QString &message)
+{
+    if (message.size() != nameReplySize * 2 ||
+        !message.startsWith("F0410000002F12") ||
+        !message.endsWith("F7"))
+        return false;
+
+    int dataSum = 0;
+    for (int offset = checksumOffset * 2; offset < message.size() - 4; offset += 2)
+    {
+        bool ok = false;
+        const int value = message.mid(offset, 2).toInt(&ok, 16);
+        if (!ok || value < 0 || value > 0x7F)
+            return false;
+        dataSum += value;
+    }
+
+    const QString receivedChecksum = message.mid(message.size() - 4, 2);
+    return receivedChecksum == MidiTable::Instance()->getCheckSum(dataSum);
+}
+
+
 // RtMidi ALSA names ports as "client:port clientId:portId", unlike the
 // flat "BOSS GT-10" name returned by the legacy backend.
 static int findGt10Port(const QList<QString> &devices)
@@ -492,18 +517,14 @@ int SysxIO::getSourceValue(QString area, QString hex1, QString hex2, QString hex
 * Reset the device after sending a sysexmesage.
 * And starts to processes the spooler if the device is free.
 **********************************************************************/
-void SysxIO::resetDevice(QString replyMsg)
+void SysxIO::resetDevice(QString replyMsg) 
 {
-	Q_UNUSED(replyMsg);
 	if(this->sendSpooler.size() == 0)
 	{
-		QObject::disconnect(this, SIGNAL(sysxReply(QString)),
+		QObject::disconnect(this, SIGNAL(sysxReply(QString)),	
 			this, SLOT(resetDevice(QString)));
 
-		this->setDeviceReady(true);	// Free the device after asynchronous worker completion.
-		emit setStatusSymbol(1);
-		emit setStatusProgress(0);
-		emit setStatusMessage(tr("Ready"));
+		this->setDeviceReady(true);	// Free the device after finishing interaction.
 	}
 	else
 	{
@@ -1017,7 +1038,7 @@ void SysxIO::returnPatchName(QString sysxMsg)
 			this, SLOT(returnPatchName(QString)));
 	
 	QString name; 
-	if(sysxMsg.size()/2 == 29)   
+	if(isValidPatchNameReply(sysxMsg))   
 	{		
 		int dataStartOffset = sysxNameOffset;   //pointer to start of names in patch file at xxxx bytes.
 		QString hex1, hex2, hex3, hex4;
@@ -1164,9 +1185,8 @@ void SysxIO::systemWrite()
 		}; 
 	}; 
 	//setSyncStatus(true);		// In advance of the actual data transfer we set it already to sync.
-	QObject::disconnect(this, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString)));
-	QObject::connect(this, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString)));
-	sendSysx(sysxMsg);	// resetDevice() releases the device after the worker completes.
+	sendSysx(sysxMsg);	// Send the data.
+	setDeviceReady(true);
 };
 
 void SysxIO::systemDataRequest()
@@ -1356,5 +1376,17 @@ void SysxIO::writeToBuffer()
 	QObject::connect(this, SIGNAL(sysxReply(QString)),	// Connect the result signal 
 		this, SLOT(resetDevice(QString)));					// to a slot that will reset the device after sending.
 	sendSysx(sysxMsg);	// Send the data.
-	// resetDevice() releases the device when the MIDI worker completes.
+		
+		emit setStatusProgress(33); // time wasting sinusidal statusbar progress
+		SLEEP(150);
+		emit setStatusProgress(66);
+		SLEEP(150);		
+		emit setStatusProgress(100);
+		SLEEP(150);		
+		emit setStatusProgress(75);
+		SLEEP(150);		
+		emit setStatusProgress(42);
+		SLEEP(150); 
+		emit setStatusMessage(tr("Ready"));
+	  setDeviceReady(true);
 };
