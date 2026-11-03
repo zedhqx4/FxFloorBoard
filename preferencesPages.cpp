@@ -244,6 +244,7 @@ WindowPage::WindowPage(QWidget *parent)
 	restoreLayout->addWidget(sidepanelCheckBox);
   restoreLayout->addWidget(singleWindowCheckBox);
   restoreLayout->addWidget(widgetsCheckBox);
+    restoreLayout->addWidget(menuBarCheckBox);
 	
 	QVBoxLayout *windowLayout = new QVBoxLayout;
 	windowLayout->addLayout(restoreLayout);
@@ -264,7 +265,6 @@ WindowPage::WindowPage(QWidget *parent)
 	splashLayout->addWidget(splashDescriptionLabel);
 	splashLayout->addSpacing(12);
 	splashLayout->addWidget(splashCheckBox);
-    splashLayout->addWidget(menuBarCheckBox);
 
 	QVBoxLayout *splashScreenLayout = new QVBoxLayout;
 	splashScreenLayout->addLayout(splashLayout);
