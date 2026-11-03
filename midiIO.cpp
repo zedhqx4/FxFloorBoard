@@ -60,9 +60,6 @@ static MidiBackendOut *createMidiOut(const std::string &clientName)
 #include "Preferences.h"
 #include "MidiTable.h"
 
-int midiIO::bytesTotal = 0;
-int midiIO::bytesReceived = 0;
-bool midiIO::dataReceive = false;
 
 // Platform-dependent sleep routines.
 #ifdef Q_OS_WIN
@@ -423,7 +420,6 @@ cleanup:
         QMutexLocker locker(&sysxBufferMutex);
         this->sysxInMsg = this->sysxBuffer;
     }
-    dataReceive = true;
     delete midiin;
 };
 /**************************** run() **************************************
@@ -476,7 +472,7 @@ void midiIO::run()
         else   // if not a midi message, then it must be a sysx message
         {
         RECEIVE:
-                this->dataReceive = false;
+                this->
                 { QMutexLocker locker(&sysxBufferMutex); this->sysxBuffer.clear(); }
                 this->sysxInMsg.clear();
                 /* Check if we are going to receive something on sending */
@@ -489,20 +485,15 @@ void midiIO::run()
                         bool ok;
                         QString sizeChunk = sysxOutMsg.mid(sysxDataOffset * 2, 4 * 2);
                         int dataLenght = sizeChunk.toInt(&ok, 16);
-                        bytesTotal = (sysxDataOffset + 2) + dataLenght;
                         if(dataLenght == 0) // Id request>
                         {
-                                bytesTotal += 2;
                         }
                         else if(sizeChunk == patchRequestDataSize) // Patch Request data size
-                        {
-                                bytesTotal = patchReplySize;     // progressbar scaled to patch size
+                        {     // progressbar scaled to patch size
                         }
                         else if (sizeChunk == "00020900")
                         {
-        bytesTotal = systemSize;
       };
-      dataReceive = true;
                         receiveMsg(sysxInMsg, midiInPort);
       Preferences *preferences = Preferences::Instance(); // Load the preferences.
             int receivedBytes = 0;

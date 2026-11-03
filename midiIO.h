@@ -66,9 +66,6 @@ private:
 	int loopCount;
 	QString sysxBuffer;
 	QMutex sysxBufferMutex;
-	static bool dataReceive;
-	static int bytesTotal;
-	static int bytesReceived;
 	int midiOutPort;
 	int midiInPort;
 	QString sysxOutMsg;
