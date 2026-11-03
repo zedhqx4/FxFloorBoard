@@ -82,6 +82,7 @@ public:
 	QString getCurrentPatchName();
 	void sendMidi(QString midiMsg);
 	void sendSysx(QString sysxMsg);
+	void sendPatchWriteAndVerify(QString sysxMsg, int bank, int patch);
 	void requestPatchName(int bank, int patch);
 	void requestPatch(int bank, int patch);
 	void requestPatchChange(int bank, int patch);
@@ -119,6 +120,7 @@ private slots:
 
 signals:
 	void sysxReply(QString sysxMsg);
+	void patchMemoryWriteVerified(bool verified);
 	void patchName(QString name);
 	void isFinished();
 	void isChanged();
@@ -169,6 +171,10 @@ private:
 	QString pendingBufferExpectedData;
 	bool verifySystemReadback;
 	QString pendingSystemExpectedData;
+	bool verifyPermanentPatchReadback;
+	QString pendingPermanentPatchExpectedData;
+	int pendingPermanentPatchBank;
+	int pendingPermanentPatch;
 };
 
 #endif // SYSXIO_H

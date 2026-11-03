@@ -1237,16 +1237,31 @@ void floorBoardDisplay::writeToMemory()
                         sysxMsg.append(hex);
                 };
         };
-        sysxIO->setNoError(true);
-        sysxIO->setSyncStatus(false); // Permanent write remains unverified until readback.
-        this->writeButton->setBlink(false); // so no blinking here either...
-        this->writeButton->setValue(true);	// ... and still the button will be active also ...
-
-        QObject::disconnect(sysxIO, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString)));
-        QObject::connect(sysxIO, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString))); // Connect the result signal to a slot that will reset the device after sending.
-        sysxIO->sendSysx(sysxMsg);								// Send the data.
+        this->writeButton->setBlink(true);
+        this->writeButton->setValue(false);
+        QObject::disconnect(sysxIO, SIGNAL(patchMemoryWriteVerified(bool)), this, SLOT(patchMemoryWriteVerified(bool)));
+        QObject::connect(sysxIO, SIGNAL(patchMemoryWriteVerified(bool)), this, SLOT(patchMemoryWriteVerified(bool)));
+        sysxIO->sendPatchWriteAndVerify(sysxMsg, bank, patch);								// Send the data.
         };
 
+void floorBoardDisplay::patchMemoryWriteVerified(bool verified)
+{
+    SysxIO *sysxIO = SysxIO::Instance();
+    QObject::disconnect(sysxIO, SIGNAL(patchMemoryWriteVerified(bool)), this, SLOT(patchMemoryWriteVerified(bool)));
+    this->writeButton->setBlink(!verified);
+    this->writeButton->setValue(verified);
+    if (verified)
+    {
+        setPatchNumDisplay(sysxIO->getLoadedBank(), sysxIO->getLoadedPatch());
+        emit setStatusMessage(tr("Permanent patch write verified by readback."));
+        emit connectedSignal();
+    }
+    else
+    {
+        emit setStatusMessage(tr("Permanent patch write could not be verified; it remains unsynchronized."));
+    }
+    emit setStatusProgress(0);
+}
 void floorBoardDisplay::patchChangeFailed()
 {
         SysxIO *sysxIO = SysxIO::Instance();

@@ -187,6 +187,9 @@ SysxIO::SysxIO()
 	this->setSyncStatus(false);
 	this->verifyBufferReadback = false;
 	this->verifySystemReadback = false;
+	this->verifyPermanentPatchReadback = false;
+	this->pendingPermanentPatchBank = 0;
+	this->pendingPermanentPatch = 0;
 	this->setNoError(true);
 	this->setBank(0);
 	this->setPatch(0);
@@ -632,10 +635,33 @@ void SysxIO::resetDevice(QString replyMsg)
         QObject::connect(this, SIGNAL(sysxReply(QString)), this, SLOT(verifyPatchBufferReply(QString)));
         emit setStatusSymbol(3);
         emit setStatusMessage(tr("Verify patch buffer"));
+        setNoError(true);
         MidiTable *midiTable = MidiTable::Instance();
         sendSysx(midiTable->patchRequest(0, 0)); // Read the temporary patch buffer at 0x60:00.
         return;
     }
+    if (this->verifyPermanentPatchReadback)
+    {
+        if (!isConnected())
+        {
+            this->verifyPermanentPatchReadback = false;
+            this->pendingPermanentPatchExpectedData.clear();
+            setSyncStatus(false);
+            setDeviceReady(true);
+            emit errorSignal(tr("Permanent Patch Verification"), tr("GT-10 disconnected before patch readback"));
+            emit patchMemoryWriteVerified(false);
+            return;
+        }
+        QObject::disconnect(this, SIGNAL(sysxReply(QString)), this, SLOT(verifyPatchBufferReply(QString)));
+        QObject::connect(this, SIGNAL(sysxReply(QString)), this, SLOT(verifyPatchBufferReply(QString)));
+        emit setStatusSymbol(3);
+        emit setStatusMessage(tr("Verify permanent patch"));
+        setNoError(true);
+        MidiTable *midiTable = MidiTable::Instance();
+        sendSysx(midiTable->patchRequest(this->pendingPermanentPatchBank, this->pendingPermanentPatch));
+        return;
+    }
+
     if (this->verifySystemReadback)
     {
         if (!isConnected())
@@ -662,26 +688,48 @@ void SysxIO::resetDevice(QString replyMsg)
 void SysxIO::verifyPatchBufferReply(QString replyMsg)
 {
     QObject::disconnect(this, SIGNAL(sysxReply(QString)), this, SLOT(verifyPatchBufferReply(QString)));
+    const bool verifyingPermanentPatch = this->verifyPermanentPatchReadback;
+    const QString expectedPayload = verifyingPermanentPatch ?
+        this->pendingPermanentPatchExpectedData : this->pendingBufferExpectedData;
     const QString actualPayload = gt10PatchReplyPayload(replyMsg);
-    const bool verified = noError() &&
-                          !this->pendingBufferExpectedData.isEmpty() &&
-                          !actualPayload.isEmpty() &&
-                          actualPayload == this->pendingBufferExpectedData;
+    const bool verified = noError() && !expectedPayload.isEmpty() &&
+                          !actualPayload.isEmpty() && actualPayload == expectedPayload;
     if (verified)
     {
         setSyncStatus(true);
-        emit setStatusdBugMessage(tr("GT-10 temporary patch buffer readback verified"));
+        if (verifyingPermanentPatch)
+        {
+            setLoadedBank(this->pendingPermanentPatchBank);
+            setLoadedPatch(this->pendingPermanentPatch);
+            emit setStatusdBugMessage(tr("GT-10 permanent patch readback verified"));
+        }
+        else
+        {
+            emit setStatusdBugMessage(tr("GT-10 temporary patch buffer readback verified"));
+        }
     }
     else
     {
         setSyncStatus(false);
-        emit errorSignal(tr("Patch Buffer Verification"), tr("GT-10 readback did not match the patch data sent"));
+        emit errorSignal(verifyingPermanentPatch ? tr("Permanent Patch Verification") : tr("Patch Buffer Verification"),
+                         tr("GT-10 readback did not match the patch data sent"));
     }
+
     this->pendingBufferExpectedData.clear();
+    this->pendingPermanentPatchExpectedData.clear();
+    this->verifyPermanentPatchReadback = false;
     setDeviceReady(true);
     emit setStatusSymbol(1);
     emit setStatusProgress(0);
-    emit setStatusMessage(verified ? tr("Patch buffer verified") : tr("Patch buffer verification failed"));
+    if (verifyingPermanentPatch)
+    {
+        emit setStatusMessage(verified ? tr("Permanent patch verified") : tr("Permanent patch verification failed"));
+        emit patchMemoryWriteVerified(verified);
+    }
+    else
+    {
+        emit setStatusMessage(verified ? tr("Patch buffer verified") : tr("Patch buffer verification failed"));
+    }
 };
 
 /************************ processSpooler() ******************************
@@ -1301,6 +1349,29 @@ void SysxIO::emitStatusMessage(QString message)
 void SysxIO::emitStatusdBugMessage(QString dBug)
 {
 	emit setStatusdBugMessage(dBug);
+};
+
+void SysxIO::sendPatchWriteAndVerify(QString sysxMsg, int bank, int patch)
+{
+    setDeviceReady(false);
+    setNoError(true);
+    this->pendingPermanentPatchExpectedData = gt10SysxPayload(sysxMsg, false);
+    if (this->pendingPermanentPatchExpectedData.isEmpty())
+    {
+        setSyncStatus(false);
+        setDeviceReady(true);
+        emit errorSignal(tr("Permanent Patch Verification"), tr("could not prepare patch data for readback verification"));
+        emit patchMemoryWriteVerified(false);
+        return;
+    }
+
+    this->pendingPermanentPatchBank = bank;
+    this->pendingPermanentPatch = patch;
+    this->verifyPermanentPatchReadback = true;
+    setSyncStatus(false);
+    QObject::disconnect(this, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString)));
+    QObject::connect(this, SIGNAL(sysxReply(QString)), this, SLOT(resetDevice(QString)));
+    sendSysx(sysxMsg);
 };
 
 void SysxIO::systemWrite()
