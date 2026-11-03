@@ -1029,6 +1029,7 @@ void SysxIO::sendMidi(QString midiMsg)
 {
 	if(isConnected())
 	{
+		setNoError(true);
 		Preferences *preferences = Preferences::Instance(); bool ok;
 		int midiOutPort = preferences->getPreferences("Midi", "MidiOut", "device").toInt(&ok, 10);	// Get midi out device from preferences.
 		
@@ -1055,9 +1056,23 @@ void SysxIO::sendMidi(QString midiMsg)
 void SysxIO::finishedSending()
 {
 	emit isFinished();
-	emit setStatusSymbol(1);
-	emit setStatusProgress(0);
-	emit setStatusMessage(tr("Ready"));
+
+    // Writes and verified reads keep the device reserved until resetDevice() or
+    // a readback slot releases it. Do not report "Ready" while that is pending.
+    if (!deviceReady())
+        return;
+
+    emit setStatusProgress(0);
+    if (noError())
+    {
+        emit setStatusSymbol(1);
+        emit setStatusMessage(tr("Ready"));
+    }
+    else
+    {
+        emit setStatusSymbol(0);
+        emit setStatusMessage(tr("MIDI operation failed; check diagnostics"));
+    }
 
 	//this->namePatchChange();
 };
@@ -1149,6 +1164,7 @@ void SysxIO::checkPatchChange(QString name)
 *****************************************************************************/
 void SysxIO::sendSysx(QString sysxMsg)
 {
+	setNoError(true);
 	Preferences *preferences = Preferences::Instance();  bool ok;
 	int midiOutPort = preferences->getPreferences("Midi", "MidiOut", "device").toInt(&ok, 10);	// Get midi out device from preferences.
 	int midiInPort = preferences->getPreferences("Midi", "MidiIn", "device").toInt(&ok, 10);	// Get midi in device from preferences.
