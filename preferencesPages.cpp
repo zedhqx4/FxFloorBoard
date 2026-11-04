@@ -226,10 +226,15 @@ WindowPage::WindowPage(QWidget *parent)
 	QCheckBox *sidepanelCheckBox = new QCheckBox(QObject::tr("Restore sidepanel"));
   QCheckBox *singleWindowCheckBox = new QCheckBox(QObject::tr("Single Window Layout"));
   QCheckBox *widgetsCheckBox = new QCheckBox(QObject::tr("Graphical Assistance"));
+    // Menu bar visibility option retained but disabled for now.
+    // QString menuBarVisible = preferences->getPreferences("Window", "MenuBar", "visible");
+    // QCheckBox *menuBarCheckBox = new QCheckBox(QObject::tr("Show menu bar"));
 	this->windowCheckBox = windowCheckBox;
 	this->sidepanelCheckBox = sidepanelCheckBox;
   this->singleWindowCheckBox = singleWindowCheckBox;
   this->widgetsCheckBox = widgetsCheckBox;
+    // this->menuBarCheckBox = menuBarCheckBox;
+    // if(menuBarVisible != "false") { menuBarCheckBox->setChecked(true); };
 
         if(windowRestore=="true") { windowCheckBox->setChecked(true); };
         if(sidepanelRestore=="true") { sidepanelCheckBox->setChecked(true); };
@@ -243,6 +248,7 @@ WindowPage::WindowPage(QWidget *parent)
 	restoreLayout->addWidget(sidepanelCheckBox);
   restoreLayout->addWidget(singleWindowCheckBox);
   restoreLayout->addWidget(widgetsCheckBox);
+    // restoreLayout->addWidget(menuBarCheckBox);
 	
 	QVBoxLayout *windowLayout = new QVBoxLayout;
 	windowLayout->addLayout(restoreLayout);
