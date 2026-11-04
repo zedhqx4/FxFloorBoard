@@ -44,6 +44,33 @@
 #endif
 
 
+namespace
+{
+namespace FloorBoardDisplayLayout
+{
+enum
+{
+    PatchDisplayRow = 5, EffectButtonRow = 60, ClipboardRow = 580, BottomDialogRow = 635,
+    EffectButtonRowSpacing = 35,
+    PatchNumberX = 10, PatchNameX = 70, ValueDisplayX = 230,
+    PatchNumberWidth = 50, DisplayWidth = 150, DisplayHeight = 34,
+    InitPatchX = 390, InitPatchYOffset = 19, InitPatchWidth = 168, InitPatchHeight = 15,
+    RenameDialogX = 780, RenameDialogYOffset = 5, RenameDialogWidth = 320, RenameDialogHeight = 25,
+    OutputMenuX = 580, OutputMenuWidth = 200, OutputMenuHeight = 30,
+    CategoryMenuX = 580, CategoryMenuYOffset = 19, CategoryMenuWidth = 300, CategoryMenuHeight = 30,
+    ConnectButtonX = 390, WriteButtonX = 479,
+    ChannelModeX = 40, ChannelSelectX = 90, PreampX = 160, SoloX = 210,
+    CompressorX = 290, NoiseSuppressorX = 350, FxX = 410, AutoRiffX = 470,
+    SendReturnX = 530, EqualizerX = 590, ReverbX = 650, PedalFxX = 710, SystemX = 1000,
+    Assign1X = 795, Assign2X = 840, Assign3X = 885, Assign4X = 930,
+    Clipboard1CopyX = 55, Clipboard1PasteX = 145, Clipboard2CopyX = 255, Clipboard2PasteX = 345,
+    Clipboard3CopyX = 455, Clipboard3PasteX = 545, Clipboard4CopyX = 655, Clipboard4PasteX = 745,
+    Clipboard5CopyX = 855, Clipboard5PasteX = 945,
+    Clipboard1LabelX = 55, Clipboard2LabelX = 255, Clipboard3LabelX = 455, Clipboard4LabelX = 655, Clipboard5LabelX = 855,
+    ClipboardLabelYOffset = 20, ClipboardLabelWidth = 170, ClipboardLabelHeight = 18
+};
+}
+};
 floorBoardDisplay::floorBoardDisplay(QWidget *parent, QPoint pos)
     : QWidget(parent)
 {
@@ -52,43 +79,39 @@ floorBoardDisplay::floorBoardDisplay(QWidget *parent, QPoint pos)
         this->patchLoadError = false;
         this->blinkCount = 0;
 
-        int patchDisplayRowOffset = 5;
-        int editButtonRowOffset = 60;
-        int tempRowOffset = 580;
-        int bottomOffset = 635;
-        this->patchNumDisplay = new customDisplay(QRect(10, patchDisplayRowOffset, 50, 34), this);
+        this->patchNumDisplay = new customDisplay(QRect(FloorBoardDisplayLayout::PatchNumberX, FloorBoardDisplayLayout::PatchDisplayRow, FloorBoardDisplayLayout::PatchNumberWidth, FloorBoardDisplayLayout::DisplayHeight), this);
         this->patchNumDisplay->setLabelPosition(true);
         this->patchNumDisplay->setMainObjectName("bankMain");
         this->patchNumDisplay->setSubObjectName("bankSub");
         this->patchNumDisplay->setWhatsThis(tr("Patch Number Display.<br>displays the currently selected patch<br>and patch write memory location."));
-        this->patchDisplay = new customDisplay(QRect(70, patchDisplayRowOffset, 150, 34), this);
+        this->patchDisplay = new customDisplay(QRect(FloorBoardDisplayLayout::PatchNameX, FloorBoardDisplayLayout::PatchDisplayRow, FloorBoardDisplayLayout::DisplayWidth, FloorBoardDisplayLayout::DisplayHeight), this);
         this->patchDisplay->setMainObjectName("nameMain");
         this->patchDisplay->setSubObjectName("nameSub");
-        this->valueDisplay = new customDisplay(QRect(230, patchDisplayRowOffset, 150, 34), this);
+        this->valueDisplay = new customDisplay(QRect(FloorBoardDisplayLayout::ValueDisplayX, FloorBoardDisplayLayout::PatchDisplayRow, FloorBoardDisplayLayout::DisplayWidth, FloorBoardDisplayLayout::DisplayHeight), this);
         this->valueDisplay->setMainObjectName("valueMain");
         this->valueDisplay->setSubObjectName("valueSub");
 
-        this->temp1Display = new customLabelDisplay(QRect(55, tempRowOffset+20, 170, 18), this);
+        this->temp1Display = new customLabelDisplay(QRect(55, FloorBoardDisplayLayout::ClipboardRow+20, 170, 18), this);
         this->temp1Display->setLabelPosition(true);
         this->temp1Display->setMainObjectName("nameMain");
         this->temp1Display->setMainText(tr("Empty"), Qt::AlignCenter);
         this->temp1Display->setWhatsThis(tr("Name of the currently stored patch in the clipboard."));
-        this->temp2Display = new customLabelDisplay(QRect(255, tempRowOffset+20, 170, 18), this);
+        this->temp2Display = new customLabelDisplay(QRect(255, FloorBoardDisplayLayout::ClipboardRow+20, 170, 18), this);
         this->temp2Display->setLabelPosition(true);
         this->temp2Display->setMainObjectName("nameMain");
         this->temp2Display->setMainText(tr("Empty"), Qt::AlignCenter);
         this->temp2Display->setWhatsThis(tr("Name of the currently stored patch in the clipboard."));
-        this->temp3Display = new customLabelDisplay(QRect(455, tempRowOffset+20, 170, 18), this);
+        this->temp3Display = new customLabelDisplay(QRect(455, FloorBoardDisplayLayout::ClipboardRow+20, 170, 18), this);
         this->temp3Display->setLabelPosition(true);
         this->temp3Display->setMainObjectName("nameMain");
         this->temp3Display->setMainText(tr("Empty"), Qt::AlignCenter);
         this->temp3Display->setWhatsThis(tr("Name of the currently stored patch in the clipboard."));
-        this->temp4Display = new customLabelDisplay(QRect(655, tempRowOffset+20, 170, 18), this);
+        this->temp4Display = new customLabelDisplay(QRect(655, FloorBoardDisplayLayout::ClipboardRow+20, 170, 18), this);
         this->temp4Display->setLabelPosition(true);
         this->temp4Display->setMainObjectName("nameMain");
         this->temp4Display->setMainText(tr("Empty"), Qt::AlignCenter);
         this->temp4Display->setWhatsThis(tr("Name of the currently stored patch in the clipboard."));
-        this->temp5Display = new customLabelDisplay(QRect(855, tempRowOffset+20, 170, 18), this);
+        this->temp5Display = new customLabelDisplay(QRect(855, FloorBoardDisplayLayout::ClipboardRow+20, 170, 18), this);
         this->temp5Display->setLabelPosition(true);
         this->temp5Display->setMainObjectName("nameMain");
         this->temp5Display->setMainText(tr("Empty"), Qt::AlignCenter);
@@ -99,113 +122,113 @@ floorBoardDisplay::floorBoardDisplay(QWidget *parent, QPoint pos)
         this->patchDisplay->setMainText(deviceType + tr(" Fx FloorBoard"));
         this->patchDisplay->setSubText(tr("version"), version);
 
-  initPatch = new initPatchListMenu(QRect(390, patchDisplayRowOffset+19, 168, 15), this);
+  initPatch = new initPatchListMenu(QRect(FloorBoardDisplayLayout::InitPatchX, FloorBoardDisplayLayout::PatchDisplayRow + FloorBoardDisplayLayout::InitPatchYOffset, FloorBoardDisplayLayout::InitPatchWidth, FloorBoardDisplayLayout::InitPatchHeight), this);
   initPatch->setWhatsThis(tr("Clicking on this will load a patch from a predefined selection.<br>patches place in the Init Patches folder will appear in this list at the start of the next session."));
   renameWidget *nameEdit = new renameWidget(this);
-  nameEdit->setGeometry(70, patchDisplayRowOffset, 150, 34);
+  nameEdit->setGeometry(FloorBoardDisplayLayout::PatchNameX, FloorBoardDisplayLayout::PatchDisplayRow, FloorBoardDisplayLayout::DisplayWidth, FloorBoardDisplayLayout::DisplayHeight);
   nameEdit->setWhatsThis(tr("Clicking on this will open<br>a text dialog window<br>allowing user text input."));
   customRenameWidget *userDialog = new customRenameWidget(this, "0E", "00", "00", "Structure", "20");
-  userDialog->setGeometry(780, patchDisplayRowOffset+5, 320, 25);
+  userDialog->setGeometry(FloorBoardDisplayLayout::RenameDialogX, FloorBoardDisplayLayout::PatchDisplayRow + FloorBoardDisplayLayout::RenameDialogYOffset, FloorBoardDisplayLayout::RenameDialogWidth, FloorBoardDisplayLayout::RenameDialogHeight);
   userDialog->setWhatsThis(tr("Clicking on this will open<br>a text dialog window<br>allowing user text input."));
   customRenameWidget *patchDialog = new customRenameWidget(this, "0D", "00", "00", "Structure", "80");
-  patchDialog->setGeometry(50, bottomOffset, 980, 25);
+  patchDialog->setGeometry(50, FloorBoardDisplayLayout::BottomDialogRow, 980, 25);
   patchDialog->setWhatsThis(tr("Clicking on this will open<br>a text dialog window<br>allowing user text input."));
   this->output = new customControlListMenu(this, "00", "00", "11", "right");
-  output->setGeometry(580, patchDisplayRowOffset, 200, 30);
+  output->setGeometry(FloorBoardDisplayLayout::OutputMenuX, FloorBoardDisplayLayout::PatchDisplayRow, FloorBoardDisplayLayout::OutputMenuWidth, FloorBoardDisplayLayout::OutputMenuHeight);
   output->setWhatsThis(tr("This is the Patch Mode setting of Output Select<br>this is only active if the SYSTEM setting<br>is set to Patch Mode."));
   this->catagory = new customControlListMenu(this, "00", "00", "10", "right");
-  catagory->setGeometry(580, patchDisplayRowOffset+19, 300, 30);
+  catagory->setGeometry(FloorBoardDisplayLayout::CategoryMenuX, FloorBoardDisplayLayout::PatchDisplayRow + FloorBoardDisplayLayout::CategoryMenuYOffset, FloorBoardDisplayLayout::CategoryMenuWidth, FloorBoardDisplayLayout::CategoryMenuHeight);
 
-  this->connectButton = new customButton(tr("Connect"), false, QPoint(390, patchDisplayRowOffset), this, ":/images/greenledbutton.png");
+  this->connectButton = new customButton(tr("Connect"), false, QPoint(FloorBoardDisplayLayout::ConnectButtonX, FloorBoardDisplayLayout::PatchDisplayRow), this, ":/images/greenledbutton.png");
   this->connectButton->setWhatsThis(tr("Connect Button<br>used to establish a continuous midi connection<br>when lit green, the connection is valid"));
-  this->writeButton = new customButton(tr("Write/Sync"), false, QPoint(479, patchDisplayRowOffset), this, ":/images/ledbutton.png");
+  this->writeButton = new customButton(tr("Write/Sync"), false, QPoint(FloorBoardDisplayLayout::WriteButtonX, FloorBoardDisplayLayout::PatchDisplayRow), this, ":/images/ledbutton.png");
   this->writeButton->setWhatsThis(tr("Write/Sync Button<br>if the patch number displays [temp buffer]<br>the current patch is sent to the GT temporary memory only<br>or else the patch will be written to the displayed patch memory location."));
-  this->system_midi_Button = new customPanelButton(tr("Midi"), false, QPoint(1000, editButtonRowOffset+35), this, ":/images/switch.png");
+  this->system_midi_Button = new customPanelButton(tr("Midi"), false, QPoint(FloorBoardDisplayLayout::SystemX, FloorBoardDisplayLayout::EffectButtonRow+35), this, ":/images/switch.png");
   this->system_midi_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->system_Button = new customPanelButton(tr("System"), false, QPoint(1000, editButtonRowOffset), this, ":/images/switch.png");
+  this->system_Button = new customPanelButton(tr("System"), false, QPoint(FloorBoardDisplayLayout::SystemX, FloorBoardDisplayLayout::EffectButtonRow), this, ":/images/switch.png");
   this->system_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
 
-  this->ch_mode_Button = new customPanelButton(tr("CH MODE"), false, QPoint(40, editButtonRowOffset), this, ":/images/switch.png");
+  this->ch_mode_Button = new customPanelButton(tr("CH MODE"), false, QPoint(FloorBoardDisplayLayout::ChannelModeX, FloorBoardDisplayLayout::EffectButtonRow), this, ":/images/switch.png");
   this->ch_mode_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->channel_A_Button = new customPanelButton(tr("CH-A"), false, QPoint(90, editButtonRowOffset), this, ":/images/switch.png");
+  this->channel_A_Button = new customPanelButton(tr("CH-A"), false, QPoint(FloorBoardDisplayLayout::ChannelSelectX, FloorBoardDisplayLayout::EffectButtonRow), this, ":/images/switch.png");
   this->channel_A_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->channel_B_Button = new customPanelButton(tr("CH-B"), false, QPoint(90, editButtonRowOffset+35), this, ":/images/switch.png");
+  this->channel_B_Button = new customPanelButton(tr("CH-B"), false, QPoint(FloorBoardDisplayLayout::ChannelSelectX, FloorBoardDisplayLayout::EffectButtonRow+35), this, ":/images/switch.png");
   this->channel_B_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->preamp1_Button = new customPanelButton(tr("PREAMP-A"), false, QPoint(160, editButtonRowOffset), this, ":/images/switch.png");
+  this->preamp1_Button = new customPanelButton(tr("PREAMP-A"), false, QPoint(FloorBoardDisplayLayout::PreampX, FloorBoardDisplayLayout::EffectButtonRow), this, ":/images/switch.png");
   this->preamp1_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->preamp2_Button = new customPanelButton(tr("PREAMP-B"), false, QPoint(160, editButtonRowOffset+35), this, ":/images/switch.png");
+  this->preamp2_Button = new customPanelButton(tr("PREAMP-B"), false, QPoint(FloorBoardDisplayLayout::PreampX, FloorBoardDisplayLayout::EffectButtonRow+35), this, ":/images/switch.png");
   this->preamp2_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->solo1_Button = new customPanelButton(tr("SOLO-A"), false, QPoint(210, editButtonRowOffset), this, ":/images/solo_switch.png");
+  this->solo1_Button = new customPanelButton(tr("SOLO-A"), false, QPoint(FloorBoardDisplayLayout::SoloX, FloorBoardDisplayLayout::EffectButtonRow), this, ":/images/solo_switch.png");
   this->solo1_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->solo2_Button = new customPanelButton(tr("SOLO-B"), false, QPoint(210, editButtonRowOffset+35), this, ":/images/solo_switch.png");
+  this->solo2_Button = new customPanelButton(tr("SOLO-B"), false, QPoint(FloorBoardDisplayLayout::SoloX, FloorBoardDisplayLayout::EffectButtonRow+35), this, ":/images/solo_switch.png");
   this->solo2_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->compressor_Button = new customPanelButton(tr("Compressor"), false, QPoint(290,editButtonRowOffset), this, ":/images/switch.png");
+  this->compressor_Button = new customPanelButton(tr("Compressor"), false, QPoint(290,FloorBoardDisplayLayout::EffectButtonRow), this, ":/images/switch.png");
   this->compressor_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->distortion_Button = new customPanelButton(tr("Distortion"), false, QPoint(290,editButtonRowOffset+35), this, ":/images/switch.png");
+  this->distortion_Button = new customPanelButton(tr("Distortion"), false, QPoint(290,FloorBoardDisplayLayout::EffectButtonRow+35), this, ":/images/switch.png");
   this->distortion_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->ns1_Button = new customPanelButton(tr("NS-1"), false, QPoint(350, editButtonRowOffset), this, ":/images/switch.png");
+  this->ns1_Button = new customPanelButton(tr("NS-1"), false, QPoint(FloorBoardDisplayLayout::NoiseSuppressorX, FloorBoardDisplayLayout::EffectButtonRow), this, ":/images/switch.png");
   this->ns1_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->ns2_Button = new customPanelButton(tr("NS-2"), false, QPoint(350, editButtonRowOffset+35), this, ":/images/switch.png");
+  this->ns2_Button = new customPanelButton(tr("NS-2"), false, QPoint(FloorBoardDisplayLayout::NoiseSuppressorX, FloorBoardDisplayLayout::EffectButtonRow+35), this, ":/images/switch.png");
   this->ns2_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->fx1_Button = new customPanelButton(tr("FX-1"), false, QPoint(410, editButtonRowOffset), this, ":/images/switch.png");
+  this->fx1_Button = new customPanelButton(tr("FX-1"), false, QPoint(FloorBoardDisplayLayout::FxX, FloorBoardDisplayLayout::EffectButtonRow), this, ":/images/switch.png");
   this->fx1_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->fx2_Button = new customPanelButton(tr("FX-2"), false, QPoint(410, editButtonRowOffset+35), this, ":/images/switch.png");
+  this->fx2_Button = new customPanelButton(tr("FX-2"), false, QPoint(FloorBoardDisplayLayout::FxX, FloorBoardDisplayLayout::EffectButtonRow+35), this, ":/images/switch.png");
   this->fx2_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->fx1_autoriff_Button = new customPanelButton(tr("FX1 AutoRiff"), false, QPoint(470, editButtonRowOffset), this, ":/images/switch.png");
+  this->fx1_autoriff_Button = new customPanelButton(tr("FX1 AutoRiff"), false, QPoint(FloorBoardDisplayLayout::AutoRiffX, FloorBoardDisplayLayout::EffectButtonRow), this, ":/images/switch.png");
   this->fx1_autoriff_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->fx2_autoriff_Button = new customPanelButton(tr("FX2 AutoRiff"), false, QPoint(470, editButtonRowOffset+35), this, ":/images/switch.png");
+  this->fx2_autoriff_Button = new customPanelButton(tr("FX2 AutoRiff"), false, QPoint(FloorBoardDisplayLayout::AutoRiffX, FloorBoardDisplayLayout::EffectButtonRow+35), this, ":/images/switch.png");
   this->fx2_autoriff_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->sendreturn_Button = new customPanelButton(tr("Send/Return"), false, QPoint(530, editButtonRowOffset+35), this, ":/images/switch.png");
+  this->sendreturn_Button = new customPanelButton(tr("Send/Return"), false, QPoint(FloorBoardDisplayLayout::SendReturnX, FloorBoardDisplayLayout::EffectButtonRow+35), this, ":/images/switch.png");
   this->sendreturn_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->eq_Button = new customPanelButton(tr("Equalizer"), false, QPoint(590, editButtonRowOffset), this, ":/images/switch.png");
+  this->eq_Button = new customPanelButton(tr("Equalizer"), false, QPoint(FloorBoardDisplayLayout::EqualizerX, FloorBoardDisplayLayout::EffectButtonRow), this, ":/images/switch.png");
   this->eq_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->chorus_Button = new customPanelButton(tr("Chorus"), false, QPoint(590, editButtonRowOffset+35), this, ":/images/switch.png");
+  this->chorus_Button = new customPanelButton(tr("Chorus"), false, QPoint(FloorBoardDisplayLayout::EqualizerX, FloorBoardDisplayLayout::EffectButtonRow+35), this, ":/images/switch.png");
   this->chorus_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->reverb_Button = new customPanelButton(tr("Reverb"), false, QPoint(650, editButtonRowOffset), this, ":/images/switch.png");
+  this->reverb_Button = new customPanelButton(tr("Reverb"), false, QPoint(FloorBoardDisplayLayout::ReverbX, FloorBoardDisplayLayout::EffectButtonRow), this, ":/images/switch.png");
   this->reverb_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->delay_Button = new customPanelButton(tr("Delay"), false, QPoint(650, editButtonRowOffset+35), this, ":/images/switch.png");
+  this->delay_Button = new customPanelButton(tr("Delay"), false, QPoint(FloorBoardDisplayLayout::ReverbX, FloorBoardDisplayLayout::EffectButtonRow+35), this, ":/images/switch.png");
   this->delay_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->pedal_Button = new customPanelButton(tr("Pedal/FX"), false, QPoint(710, editButtonRowOffset), this, ":/images/switch.png");
+  this->pedal_Button = new customPanelButton(tr("Pedal/FX"), false, QPoint(FloorBoardDisplayLayout::PedalFxX, FloorBoardDisplayLayout::EffectButtonRow), this, ":/images/switch.png");
   this->pedal_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->master_Button = new customPanelButton(tr("Master"), false, QPoint(710, editButtonRowOffset+35), this, ":/images/switch.png");
+  this->master_Button = new customPanelButton(tr("Master"), false, QPoint(FloorBoardDisplayLayout::PedalFxX, FloorBoardDisplayLayout::EffectButtonRow+35), this, ":/images/switch.png");
   this->master_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
 
-  this->assign1_Button = new customPanelButton(tr("1"), false, QPoint(795, editButtonRowOffset), this, ":/images/switch.png");
+  this->assign1_Button = new customPanelButton(tr("1"), false, QPoint(FloorBoardDisplayLayout::Assign1X, FloorBoardDisplayLayout::EffectButtonRow), this, ":/images/switch.png");
   this->assign1_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->assign2_Button = new customPanelButton(tr("2"), false, QPoint(840, editButtonRowOffset), this, ":/images/switch.png");
+  this->assign2_Button = new customPanelButton(tr("2"), false, QPoint(FloorBoardDisplayLayout::Assign2X, FloorBoardDisplayLayout::EffectButtonRow), this, ":/images/switch.png");
   this->assign2_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->assign3_Button = new customPanelButton(tr("3"), false, QPoint(885, editButtonRowOffset), this, ":/images/switch.png");
+  this->assign3_Button = new customPanelButton(tr("3"), false, QPoint(FloorBoardDisplayLayout::Assign3X, FloorBoardDisplayLayout::EffectButtonRow), this, ":/images/switch.png");
   this->assign3_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->assign4_Button = new customPanelButton(tr("4"), false, QPoint(930, editButtonRowOffset), this, ":/images/switch.png");
+  this->assign4_Button = new customPanelButton(tr("4"), false, QPoint(FloorBoardDisplayLayout::Assign4X, FloorBoardDisplayLayout::EffectButtonRow), this, ":/images/switch.png");
   this->assign4_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->assign5_Button = new customPanelButton(tr("5"), false, QPoint(795, editButtonRowOffset+35), this, ":/images/switch.png");
+  this->assign5_Button = new customPanelButton(tr("5"), false, QPoint(FloorBoardDisplayLayout::Assign1X, FloorBoardDisplayLayout::EffectButtonRow+35), this, ":/images/switch.png");
   this->assign5_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->assign6_Button = new customPanelButton(tr("6"), false, QPoint(840, editButtonRowOffset+35), this, ":/images/switch.png");
+  this->assign6_Button = new customPanelButton(tr("6"), false, QPoint(FloorBoardDisplayLayout::Assign2X, FloorBoardDisplayLayout::EffectButtonRow+35), this, ":/images/switch.png");
   this->assign6_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->assign7_Button = new customPanelButton(tr("7"), false, QPoint(885, editButtonRowOffset+35), this, ":/images/switch.png");
+  this->assign7_Button = new customPanelButton(tr("7"), false, QPoint(FloorBoardDisplayLayout::Assign3X, FloorBoardDisplayLayout::EffectButtonRow+35), this, ":/images/switch.png");
   this->assign7_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
-  this->assign8_Button = new customPanelButton(tr("8"), false, QPoint(930, editButtonRowOffset+35), this, ":/images/switch.png");
+  this->assign8_Button = new customPanelButton(tr("8"), false, QPoint(FloorBoardDisplayLayout::Assign4X, FloorBoardDisplayLayout::EffectButtonRow+35), this, ":/images/switch.png");
   this->assign8_Button->setWhatsThis(tr("Deep editing of the selected effect<br>pressing this button will open an edit page<br>allowing detailed setting of this effects parameters."));
 
-  this->temp1_copy_Button = new customButton(tr("Patch-1 Copy"), false, QPoint(55, tempRowOffset), this, ":/images/pushbutton.png");
+  this->temp1_copy_Button = new customButton(tr("Patch-1 Copy"), false, QPoint(FloorBoardDisplayLayout::Clipboard1CopyX, FloorBoardDisplayLayout::ClipboardRow), this, ":/images/pushbutton.png");
   this->temp1_copy_Button->setWhatsThis(tr("Copy current patch to clipboard<br>pressing this button will save the current patch to a clipboard<br>the clipboard is saved to file and is re-loaded<br>on the next session startup."));
-  this->temp1_paste_Button = new customButton(tr("Patch-1 Paste"), false, QPoint(145, tempRowOffset), this, ":/images/pushbutton.png");
+  this->temp1_paste_Button = new customButton(tr("Patch-1 Paste"), false, QPoint(FloorBoardDisplayLayout::Clipboard1PasteX, FloorBoardDisplayLayout::ClipboardRow), this, ":/images/pushbutton.png");
   this->temp1_paste_Button->setWhatsThis(tr("Paste current patch from clipboard<br>pressing this button will load the current patch to a clipboard<br>the clipboard is re-loaded<br>from the previous session copy."));
-  this->temp2_copy_Button = new customButton(tr("Patch-2 Copy"), false, QPoint(255, tempRowOffset), this, ":/images/pushbutton.png");
+  this->temp2_copy_Button = new customButton(tr("Patch-2 Copy"), false, QPoint(FloorBoardDisplayLayout::Clipboard2CopyX, FloorBoardDisplayLayout::ClipboardRow), this, ":/images/pushbutton.png");
   this->temp2_copy_Button->setWhatsThis(tr("Copy current patch to clipboard<br>pressing this button will save the current patch to a clipboard<br>the clipboard is saved to file and is re-loaded<br>on the next session startup."));
-  this->temp2_paste_Button = new customButton(tr("Patch-2 Paste"), false, QPoint(345, tempRowOffset), this, ":/images/pushbutton.png");
+  this->temp2_paste_Button = new customButton(tr("Patch-2 Paste"), false, QPoint(FloorBoardDisplayLayout::Clipboard2PasteX, FloorBoardDisplayLayout::ClipboardRow), this, ":/images/pushbutton.png");
   this->temp2_paste_Button->setWhatsThis(tr("Paste current patch from clipboard<br>pressing this button will load the current patch to a clipboard<br>the clipboard is re-loaded<br>from the previous session copy."));
-  this->temp3_copy_Button = new customButton(tr("Patch-3 Copy"), false, QPoint(455, tempRowOffset), this, ":/images/pushbutton.png");
+  this->temp3_copy_Button = new customButton(tr("Patch-3 Copy"), false, QPoint(FloorBoardDisplayLayout::Clipboard3CopyX, FloorBoardDisplayLayout::ClipboardRow), this, ":/images/pushbutton.png");
   this->temp3_copy_Button->setWhatsThis(tr("Copy current patch to clipboard<br>pressing this button will save the current patch to a clipboard<br>the clipboard is saved to file and is re-loaded<br>on the next session startup."));
-  this->temp3_paste_Button = new customButton(tr("Patch-3 Paste"), false, QPoint(545, tempRowOffset), this, ":/images/pushbutton.png");
+  this->temp3_paste_Button = new customButton(tr("Patch-3 Paste"), false, QPoint(FloorBoardDisplayLayout::Clipboard3PasteX, FloorBoardDisplayLayout::ClipboardRow), this, ":/images/pushbutton.png");
   this->temp3_paste_Button->setWhatsThis(tr("Paste current patch from clipboard<br>pressing this button will load the current patch to a clipboard<br>the clipboard is re-loaded<br>from the previous session copy."));
-  this->temp4_copy_Button = new customButton(tr("Patch-4 Copy"), false, QPoint(655, tempRowOffset), this, ":/images/pushbutton.png");
+  this->temp4_copy_Button = new customButton(tr("Patch-4 Copy"), false, QPoint(FloorBoardDisplayLayout::Clipboard4CopyX, FloorBoardDisplayLayout::ClipboardRow), this, ":/images/pushbutton.png");
   this->temp4_copy_Button->setWhatsThis(tr("Copy current patch to clipboard<br>pressing this button will save the current patch to a clipboard<br>the clipboard is saved to file and is re-loaded<br>on the next session startup."));
-  this->temp4_paste_Button = new customButton(tr("Patch-4 Paste"), false, QPoint(745, tempRowOffset), this, ":/images/pushbutton.png");
+  this->temp4_paste_Button = new customButton(tr("Patch-4 Paste"), false, QPoint(FloorBoardDisplayLayout::Clipboard4PasteX, FloorBoardDisplayLayout::ClipboardRow), this, ":/images/pushbutton.png");
   this->temp4_paste_Button->setWhatsThis(tr("Paste current patch from clipboard<br>pressing this button will load the current patch to a clipboard<br>the clipboard is re-loaded<br>from the previous session copy."));
-  this->temp5_copy_Button = new customButton(tr("Patch-5 Copy"), false, QPoint(855, tempRowOffset), this, ":/images/pushbutton.png");
+  this->temp5_copy_Button = new customButton(tr("Patch-5 Copy"), false, QPoint(FloorBoardDisplayLayout::Clipboard5CopyX, FloorBoardDisplayLayout::ClipboardRow), this, ":/images/pushbutton.png");
   this->temp5_copy_Button->setWhatsThis(tr("Copy current patch to clipboard<br>pressing this button will save the current patch to a clipboard<br>the clipboard is saved to file and is re-loaded<br>on the next session startup."));
-  this->temp5_paste_Button = new customButton(tr("Patch-5 Paste"), false, QPoint(945, tempRowOffset), this, ":/images/pushbutton.png");
+  this->temp5_paste_Button = new customButton(tr("Patch-5 Paste"), false, QPoint(FloorBoardDisplayLayout::Clipboard5PasteX, FloorBoardDisplayLayout::ClipboardRow), this, ":/images/pushbutton.png");
   this->temp5_paste_Button->setWhatsThis(tr("Paste current patch from clipboard<br>pressing this button will load the current patch to a clipboard<br>the clipboard is re-loaded<br>from the previous session copy."));
 
         SysxIO *sysxIO = SysxIO::Instance();
