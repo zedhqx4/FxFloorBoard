@@ -223,6 +223,8 @@ namespace
 {
 std::mutex persistentMidiInputMutex;
 std::mutex persistentMidiOutputMutex;
+std::mutex persistentMidiCallbackMutex;
+midiIO *persistentMidiInputOwner = 0;
 std::unique_ptr<MidiBackendIn> persistentMidiInput;
 std::unique_ptr<MidiBackendOut> persistentMidiOutput;
 QString persistentMidiInputSelection;
@@ -532,11 +534,12 @@ cleanup:
 void midicallback(double deltatime, std::vector<unsigned char> *message, void *userData)
 {
     Q_UNUSED(deltatime);
-    midiIO *midi = static_cast<midiIO *>(userData);
-    if (!midi || !message || message->size() < 2)
+    Q_UNUSED(userData);
+    if (!message || message->size() < 2)
         return;
     if (message->front() != 0xF0 || message->back() != 0xF7)
         return;
+
     QString rxData;
     for (std::vector<unsigned char>::const_iterator it = message->begin(); it != message->end(); ++it)
     {
@@ -544,7 +547,12 @@ void midicallback(double deltatime, std::vector<unsigned char> *message, void *u
         if (hex.length() < 2) hex.prepend("0");
         rxData.append(hex);
     }
-    midi->callbackMsg(rxData);
+
+    // The callback can outlive an individual request. Hold this lock while
+    // dispatching so the request owner cannot be destroyed mid-callback.
+    std::lock_guard<std::mutex> ownerLock(persistentMidiCallbackMutex);
+    if (persistentMidiInputOwner)
+        persistentMidiInputOwner->callbackMsg(rxData);
 };
 
 void midiIO::reportMidiBackendError(QString windowTitle, QString errorMessage)
@@ -605,7 +613,11 @@ void midiIO::receiveMsg(const QString &midiInPort)
         if (!ensurePersistentInput(midiInPort, this))
             goto cleanup;
 
-        persistentMidiInput->setCallback(&midicallback, this);
+        {
+            std::lock_guard<std::mutex> ownerLock(persistentMidiCallbackMutex);
+            persistentMidiInputOwner = this;
+        }
+        persistentMidiInput->setCallback(&midicallback, 0);
         callbackInstalled = true;
         sendSyxMsg(sysxOutMsg, midiOutPort);
 
@@ -646,6 +658,10 @@ cleanup:
             error.printMessage();
             reportMidiBackendError(tr("Midi Input Error"), tr("could not cancel MIDI callback cleanly"));
         }
+    }
+    {
+        std::lock_guard<std::mutex> ownerLock(persistentMidiCallbackMutex);
+        persistentMidiInputOwner = 0;
     }
     clearMidiErrorOwner(persistentMidiInput.get());
 
