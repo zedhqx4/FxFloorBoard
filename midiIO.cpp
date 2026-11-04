@@ -21,7 +21,6 @@
 **
 ****************************************************************************/
 
-#include <QSysInfo>
 #include <QMutexLocker>
 #include "midiIO.h"
 #include "SysxIO.h"
@@ -198,21 +197,8 @@ void midiIO::queryMidiOutDevices()
       error.printMessage();
       reportMidiBackendError(tr("Midi Output Error"), tr("data error"));
       goto cleanup; };
-#ifdef Q_OS_WIN
-        /* if we are running msdos based windows, use device numbers instead, UNICODE not supported*/
-    if(QSysInfo::WindowsVersion <= QSysInfo::WV_Me)
-        {
-                char dev = char(i+49); // point to character set numerals
-                QString outstring = tr("un-named midi device: ");
-                outstring.append(dev);
-                this->midiOutDevices.append(outstring);
-        }
-        else { this->midiOutDevices.append(QString::fromStdString(portName)); };
-#else
-        this->midiOutDevices.append(QString::fromStdString(portName));
-#endif
+this->midiOutDevices.append(QString::fromStdString(portName));
   };
-  if (outPorts < 1) { this->midiOutDevices.push_back(tr("no midi device available")); };
  /* Clean up */
  cleanup:
   delete midiout;
@@ -244,7 +230,6 @@ void midiIO::queryMidiInDevices()
   catch (MidiBackendError &error) {
     error.printMessage();
     reportMidiBackendError(tr("Midi Input Error"), tr("enumeration error"));
-    this->midiInDevices.push_back(tr("no midi device available"));
     goto cleanup;
   };
   for ( unsigned int i=0; i<inPorts; i++ ) {
@@ -253,21 +238,8 @@ void midiIO::queryMidiInDevices()
         error.printMessage();
         reportMidiBackendError(tr("Midi Input Error"), tr("data error"));
         goto cleanup; };
-#ifdef Q_OS_WIN
-  if(QSysInfo::WindowsVersion <= QSysInfo::WV_Me)
-        {
-                char dev = char(i+49); // point to character set numerals
-                QString instring = tr("un-named midi device: ");
-                instring.append(dev);
-                this->midiInDevices.append(instring);
-        }
-  else { this->midiInDevices.append(QString::fromStdString(portName)); };
-#else
-        this->midiInDevices.append(QString::fromStdString(portName));
-#endif
+this->midiInDevices.append(QString::fromStdString(portName));
   };
-  if (inPorts < 1)
-        { this->midiInDevices.push_back(tr("no midi device available")); };
  // Clean up
  cleanup:
   delete midiin;
