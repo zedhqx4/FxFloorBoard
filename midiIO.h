@@ -48,6 +48,7 @@ public:
 	QList<QString> getMidiInDevices();
 	static QString portSelectionKey(const QString &portName);
 	static bool portSelectionMatches(const QString &savedSelection, const QString &currentSelection);
+	void initializePersistentPorts(const QString &midiInSelection, const QString &midiOutSelection);
 		
 signals:
 	void errorSignal(QString windowTitle, QString errorMsg);
