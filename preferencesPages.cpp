@@ -67,7 +67,7 @@ GeneralPage::GeneralPage(QWidget *parent)
 MidiPage::MidiPage(QWidget *parent)
 	: QWidget(parent)
 {
-	bool ok; int id;
+	bool ok;
 	midiIO *midi = new midiIO();
 	Preferences *preferences = Preferences::Instance();
 	QString midiInDevice = preferences->getPreferences("Midi", "MidiIn", "device");
@@ -76,10 +76,9 @@ MidiPage::MidiPage(QWidget *parent)
 	QString midiTimeSet = preferences->getPreferences("Midi", "Time", "set");
 	QString midiDelaySet = preferences->getPreferences("Midi", "Delay", "set");
 
-	int midiInDeviceID = midiInDevice.toInt(&ok, 10);
-	int midiOutDeviceID = midiOutDevice.toInt(&ok, 10);
 	QList<QString> midiInDevices = midi->getMidiInDevices();
 	QList<QString> midiOutDevices = midi->getMidiOutDevices();
+	delete midi;
 	
 	QGroupBox *midiGroup = new QGroupBox(QObject::tr("Midi settings"));
 
@@ -90,17 +89,14 @@ MidiPage::MidiPage(QWidget *parent)
 	QComboBox *midiInCombo = new QComboBox;
 	this->midiInCombo = midiInCombo;
 	midiInCombo->addItem(QObject::tr("Select midi-in device"));
-	id = 0;
 	for (QList<QString>::iterator dev = midiInDevices.begin(); dev != midiInDevices.end(); ++dev)
     {
 		QString str(*dev);
-		midiInCombo->addItem(str.toLatin1().data());
-		id++;
+		midiInCombo->addItem(str, midiIO::portSelectionKey(str));
     };
-	if(!midiInDevice.isEmpty())
-	{
-		midiInCombo->setCurrentIndex(midiInDeviceID + 1); // +1 because there is a default entry at 0
-	};
+	const int savedInputIndex = midiInCombo->findData(midiInDevice);
+	if (savedInputIndex >= 0)
+		midiInCombo->setCurrentIndex(savedInputIndex);
 	/*if ( midiInDevices.contains("BOSS GT-10") )
   {
     int inputDevice = midiInDevices.indexOf("BOSS GT-10") + 1;
@@ -114,13 +110,11 @@ MidiPage::MidiPage(QWidget *parent)
 	for (QList<QString>::iterator dev = midiOutDevices.begin(); dev != midiOutDevices.end(); ++dev)
     {
 		QString str(*dev);
-		midiOutCombo->addItem(str.toLatin1().data());
-		id++;
+		midiOutCombo->addItem(str, midiIO::portSelectionKey(str));
     };
-	if(!midiOutDevice.isEmpty())
-	{
-		midiOutCombo->setCurrentIndex(midiOutDeviceID + 1); // +1 because there is a default entry at 0
-	};
+	const int savedOutputIndex = midiOutCombo->findData(midiOutDevice);
+	if (savedOutputIndex >= 0)
+		midiOutCombo->setCurrentIndex(savedOutputIndex);
 	/*if ( midiOutDevices.contains("BOSS GT-10") )
   {
     int outputDevice = midiOutDevices.indexOf("BOSS GT-10") + 1;
@@ -143,6 +137,10 @@ MidiPage::MidiPage(QWidget *parent)
 	midiDevLayout->addWidget(mididescriptionLabel);
 	midiDevLayout->addSpacing(12);
 	midiDevLayout->addLayout(midiSelectLayout);
+	QLabel *midiPortInfoLabel = new QLabel(QObject::tr(
+		"Select the input and output ports explicitly. Older saved device numbers must be selected again."));
+	midiPortInfoLabel->setWordWrap(true);
+	midiDevLayout->addWidget(midiPortInfoLabel);
 
 	QVBoxLayout *midiLayout = new QVBoxLayout;
 	midiLayout->addLayout(midiDevLayout);
