@@ -100,7 +100,6 @@ MidiPage::MidiPage(QWidget *parent)
 QComboBox *midiOutCombo = new QComboBox;
 	this->midiOutCombo = midiOutCombo;
 	midiOutCombo->addItem(QObject::tr("Select midi-out device"));
-	id = 0;
 	for (QList<QString>::iterator dev = midiOutDevices.begin(); dev != midiOutDevices.end(); ++dev)
     {
 		QString str(*dev);
