@@ -581,6 +581,7 @@ void midiIO::callbackMsg(QString rxData)
 };
 void midiIO::receiveMsg(const QString &midiInPort)
 {
+    std::lock_guard<std::mutex> sessionLock(persistentMidiInputMutex);
     count = 0;
     emit setStatusSymbol(3);
 #ifdef Q_OS_WIN
@@ -594,32 +595,16 @@ void midiIO::receiveMsg(const QString &midiInPort)
     else if (msgType == "identity") { loopCount = timeoutFactor * 100; count = 15; }
     else { loopCount = timeoutFactor * 10; count = 0; }
 
-    MidiBackendIn *midiin = 0;
     bool callbackInstalled = false;
-    bool portOpened = false;
-    const std::string clientName = "FxFloorBoard";
     try
     {
-        midiin = createMidiIn(clientName, this);
-        if (midiin->getPortCount() < 1)
-        {
-            reportMidiBackendError(tr("Midi Input Error"), tr("no MIDI input device available"));
+        if (!ensurePersistentInput(midiInPort, this))
             goto cleanup;
-        }
-#ifdef Q_OS_LINUX
-        // GT-10 patch and system replies exceed RtMidi's 1 KiB default input buffer.
-        // Set the ALSA decoder buffer before opening the input port.
-        midiin->setBufferSize(4096, 4);
-#endif
-        midiin->ignoreTypes(false, true, true);
-        midiin->setCallback(&midicallback, this);
+
+        persistentMidiInput->setCallback(&midicallback, this);
         callbackInstalled = true;
-        unsigned int portIndex = 0;
-        if (!resolveMidiPort(midiin, midiInPort, portIndex, this, tr("input")))
-            goto cleanup;
-        midiin->openPort(portIndex, clientName);
-        portOpened = true;
         sendSyxMsg(sysxOutMsg, midiOutPort);
+
         int elapsed = 0;
         unsigned int progress = 1;
         unsigned int timeProgress = 1;
@@ -649,27 +634,17 @@ void midiIO::receiveMsg(const QString &midiInPort)
     }
 cleanup:
     emit setStatusProgress(100);
-    if (midiin)
+    if (callbackInstalled && persistentMidiInput)
     {
-        if (callbackInstalled)
+        try { persistentMidiInput->cancelCallback(); }
+        catch (MidiBackendError &error)
         {
-            try { midiin->cancelCallback(); }
-            catch (MidiBackendError &error)
-            {
-                error.printMessage();
-                reportMidiBackendError(tr("Midi Input Error"), tr("could not cancel MIDI callback cleanly"));
-            }
-        }
-        if (portOpened)
-        {
-            try { midiin->closePort(); }
-            catch (MidiBackendError &error)
-            {
-                error.printMessage();
-                reportMidiBackendError(tr("Midi Input Error"), tr("could not close MIDI input port cleanly"));
-            }
+            error.printMessage();
+            reportMidiBackendError(tr("Midi Input Error"), tr("could not cancel MIDI callback cleanly"));
         }
     }
+    clearMidiErrorOwner(persistentMidiInput.get());
+
     {
         QMutexLocker locker(&sysxBufferMutex);
         this->sysxInMsg = this->sysxBuffer;
@@ -678,8 +653,8 @@ cleanup:
     if (this->midiBackendErrorOccurred.load())
         this->sysxInMsg.clear();
 #endif
-    delete midiin;
 };
+/**************************** run() **************************************
 /**************************** run() **************************************
  * New QThread that processes the sysex or midi message and handles if yes
  * or no it has to start receiving a reply on the MIDI In device midiIn. If
