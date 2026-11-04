@@ -380,8 +380,7 @@ void midiIO::initializePersistentPorts(const QString &midiInSelection,
         }
         clearMidiErrorOwner(persistentMidiInput.get());
     }
-};
-};
+}
 /*********************** queryMidiOutDevices() *****************************
  * Retrieves all MIDI Out devices installed on your system and stores them
  * as a QList of QStrings and device id's.
