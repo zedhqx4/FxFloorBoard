@@ -97,8 +97,23 @@ MidiPage::MidiPage(QWidget *parent)
 	int savedInputIndex = midiInCombo->findData(midiInDevice);
 	if (savedInputIndex < 0 && !midiInDevice.isEmpty())
 	{
-		midiInCombo->addItem(QObject::tr("Unavailable: %1").arg(midiInDevice), midiInDevice);
-		savedInputIndex = midiInCombo->count() - 1;
+		int matchingIndex = -1;
+		int matchingCount = 0;
+		for (int i = 1; i < midiInCombo->count(); ++i)
+		{
+			if (midiIO::portSelectionMatches(midiInDevice, midiInCombo->itemData(i).toString()))
+			{
+				matchingIndex = i;
+				++matchingCount;
+			}
+		}
+		if (matchingCount == 1)
+			savedInputIndex = matchingIndex;
+		else
+		{
+			midiInCombo->addItem(QObject::tr("Unavailable or ambiguous: %1").arg(midiInDevice), midiInDevice);
+			savedInputIndex = midiInCombo->count() - 1;
+		}
 	}
 	if (savedInputIndex >= 0)
 		midiInCombo->setCurrentIndex(savedInputIndex);
@@ -114,8 +129,23 @@ QComboBox *midiOutCombo = new QComboBox;
 	int savedOutputIndex = midiOutCombo->findData(midiOutDevice);
 	if (savedOutputIndex < 0 && !midiOutDevice.isEmpty())
 	{
-		midiOutCombo->addItem(QObject::tr("Unavailable: %1").arg(midiOutDevice), midiOutDevice);
-		savedOutputIndex = midiOutCombo->count() - 1;
+		int matchingIndex = -1;
+		int matchingCount = 0;
+		for (int i = 1; i < midiOutCombo->count(); ++i)
+		{
+			if (midiIO::portSelectionMatches(midiOutDevice, midiOutCombo->itemData(i).toString()))
+			{
+				matchingIndex = i;
+				++matchingCount;
+			}
+		}
+		if (matchingCount == 1)
+			savedOutputIndex = matchingIndex;
+		else
+		{
+			midiOutCombo->addItem(QObject::tr("Unavailable or ambiguous: %1").arg(midiOutDevice), midiOutDevice);
+			savedOutputIndex = midiOutCombo->count() - 1;
+		}
 	}
 	if (savedOutputIndex >= 0)
 		midiOutCombo->setCurrentIndex(savedOutputIndex);
