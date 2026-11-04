@@ -186,7 +186,6 @@ void midiIO::queryMidiOutDevices()
   catch (MidiBackendError &error) {
     error.printMessage();
     reportMidiBackendError(tr("Midi Output Error"), tr("enumeration error"));
-    this->midiOutDevices.push_back(tr("no midi device available"));
     goto cleanup;
   };
   for ( unsigned int i=0; i<outPorts; i++ ) {
