@@ -375,7 +375,10 @@ void midiIO::sendMidiMsg(QString sysxOutMsg, const QString &midiOutPort)
             reportMidiBackendError(tr("Midi Output Error"), tr("invalid hexadecimal message length"));
             goto cleanup;
         }
-        midiMsgOut->openPort(static_cast<unsigned int>(midiOutPort), clientName);
+        unsigned int portIndex = 0;
+        if (!resolveMidiPort(midiMsgOut, midiOutPort, portIndex, this, tr("output")))
+            goto cleanup;
+        midiMsgOut->openPort(portIndex, clientName);
         portOpened = true;
         std::vector<unsigned char> message;
         message.reserve(static_cast<size_t>(sysxOutMsg.size() / 2));
