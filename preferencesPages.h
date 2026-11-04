@@ -61,7 +61,6 @@ public:
 	QCheckBox* singleWindowCheckBox;
   QCheckBox* widgetsCheckBox;
 	QCheckBox* splashCheckBox;
-	QCheckBox* menuBarCheckBox;
 };
 
 class LanguagePage : public QWidget
