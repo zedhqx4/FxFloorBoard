@@ -529,7 +529,7 @@ void midiIO::sendMidiMsg(QString sysxOutMsg, const QString &midiOutPort)
 cleanup:
     clearMidiErrorOwner(persistentMidiOutput.get());
 };
-/*********************** receiveMsg() **********************************
+/*********************** receiveMsg() **********************************/
 
 void midicallback(double deltatime, std::vector<unsigned char> *message, void *userData)
 {
@@ -674,7 +674,6 @@ cleanup:
         this->sysxInMsg.clear();
 #endif
 };
-/**************************** run() **************************************
 /**************************** run() **************************************
  * New QThread that processes the sysex or midi message and handles if yes
  * or no it has to start receiving a reply on the MIDI In device midiIn. If
