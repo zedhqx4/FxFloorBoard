@@ -2,8 +2,9 @@
 Editor for the BOSS GT-10 Guitar Multi-Effects Processor<br>
 <br>
 GT-10 version by<br>
+© Copyright 2026 Efren Sanchez updated rtmidi to 6.1.0 and migrated to Qt5<br>
+based on the latest build by<br>
 © Copyright 2007~2014 Colin Willcocks gumtownbassman@yahoo.com <br>
-Modernized and maintained by sagex85<br>
 based on the original fxfloorboard source written by<br>
 © Copyright 2005~2007 Uco Mesdag <br>
 (GNU General Public License)<br>	
