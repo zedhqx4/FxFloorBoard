@@ -135,7 +135,18 @@ bool resolveMidiPort(MidiBackend *backend, const QString &selectedPort,
 
     QString exactName;
     QString stableName;
-    decodePortSelectionKey(selectedPort, exactName, stableName);
+    const bool hasStructuredKey = decodePortSelectionKey(selectedPort, exactName, stableName);
+    if (!hasStructuredKey)
+    {
+        bool legacyIndex = false;
+        selectedPort.toUInt(&legacyIndex, 10);
+        if (legacyIndex)
+        {
+            owner->reportMidiBackendError(QObject::tr("MIDI Port Error"),
+                QObject::tr("The saved MIDI selection is an old device index. Please select the port again."));
+            return false;
+        }
+    }
 
     const unsigned int portCount = backend->getPortCount();
     unsigned int exactMatches = 0;
@@ -193,7 +204,14 @@ bool midiIO::portSelectionMatches(const QString &savedSelection, const QString &
     QString savedStable;
     QString currentExact;
     QString currentStable;
-    decodePortSelectionKey(savedSelection, savedExact, savedStable);
+    const bool savedHasStructuredKey = decodePortSelectionKey(savedSelection, savedExact, savedStable);
+    if (!savedHasStructuredKey)
+    {
+        bool legacyIndex = false;
+        savedSelection.toUInt(&legacyIndex, 10);
+        if (legacyIndex)
+            return false;
+    }
     decodePortSelectionKey(currentSelection, currentExact, currentStable);
     return savedExact == currentExact ||
            (!savedStable.isEmpty() && savedStable == currentStable);
