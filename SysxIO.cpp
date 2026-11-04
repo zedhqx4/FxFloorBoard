@@ -796,7 +796,6 @@ void SysxIO::sendMidi(QString midiMsg)
 	}
 	};
 };
-
 /***************************** finishedSending() *************************************
 * Signals that we are finished sending a midi message, so we can go one with our life.
 *************************************************************************************/
@@ -911,7 +910,6 @@ void SysxIO::sendSysx(QString sysxMsg)
 	}
 
 };
-
 /***************************** receiveSysx() *******************************
 * Receives possible replied sysex message on sendSysex.
 ****************************************************************************/
