@@ -216,7 +216,6 @@ WindowPage::WindowPage(QWidget *parent)
 	QString windowRestore = preferences->getPreferences("Window", "Restore", "window");
 	QString sidepanelRestore = preferences->getPreferences("Window", "Restore", "sidepanel");
 	QString splashScreen = preferences->getPreferences("Window", "Splash", "bool");
-    QString menuBarVisible = preferences->getPreferences("Window", "MenuBar", "visible");
   QString SingleWindow = preferences->getPreferences("Window", "Single", "bool");
   QString WidgetsUse = preferences->getPreferences("Window", "Widgets", "bool");
 
@@ -227,7 +226,6 @@ WindowPage::WindowPage(QWidget *parent)
 	QCheckBox *sidepanelCheckBox = new QCheckBox(QObject::tr("Restore sidepanel"));
   QCheckBox *singleWindowCheckBox = new QCheckBox(QObject::tr("Single Window Layout"));
   QCheckBox *widgetsCheckBox = new QCheckBox(QObject::tr("Graphical Assistance"));
-    QCheckBox *menuBarCheckBox = new QCheckBox(QObject::tr("Show menu bar"));
 	this->windowCheckBox = windowCheckBox;
 	this->sidepanelCheckBox = sidepanelCheckBox;
   this->singleWindowCheckBox = singleWindowCheckBox;
@@ -247,7 +245,6 @@ WindowPage::WindowPage(QWidget *parent)
 	restoreLayout->addWidget(sidepanelCheckBox);
   restoreLayout->addWidget(singleWindowCheckBox);
   restoreLayout->addWidget(widgetsCheckBox);
-    restoreLayout->addWidget(menuBarCheckBox);
 	
 	QVBoxLayout *windowLayout = new QVBoxLayout;
 	windowLayout->addLayout(restoreLayout);
