@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - GT10-SVN-Modernization-Clean
+      - rewrite-code
   pull_request:
     branches:
       - GT10-SVN-Modernization-Clean
+      - rewrite-code
   workflow_dispatch:
 
 permissions:
