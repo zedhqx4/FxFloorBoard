@@ -22,6 +22,8 @@
 ****************************************************************************/
 
 #include <QMutexLocker>
+#include <memory>
+#include <mutex>
 #include "midiIO.h"
 #include "SysxIO.h"
 #include "globalVariables.h"
@@ -499,21 +501,23 @@ void midiIO::sendMidiMsg(QString sysxOutMsg, const QString &midiOutPort)
             goto cleanup;
         }
 
-        std::vector<unsigned char> message;
-        message.reserve(static_cast<size_t>(sysxOutMsg.size() / 2));
-        for (int i = 0; i < sysxOutMsg.size(); i += 2)
         {
-            bool ok = false;
-            const unsigned int value = sysxOutMsg.mid(i, 2).toUInt(&ok, 16);
-            if (!ok || value > 0xFF)
+            std::vector<unsigned char> message;
+            message.reserve(static_cast<size_t>(sysxOutMsg.size() / 2));
+            for (int i = 0; i < sysxOutMsg.size(); i += 2)
             {
-                reportMidiBackendError(tr("Midi Output Error"), tr("invalid hexadecimal byte in MIDI message"));
-                goto cleanup;
+                bool ok = false;
+                const unsigned int value = sysxOutMsg.mid(i, 2).toUInt(&ok, 16);
+                if (!ok || value > 0xFF)
+                {
+                    reportMidiBackendError(tr("Midi Output Error"), tr("invalid hexadecimal byte in MIDI message"));
+                    goto cleanup;
+                }
+                message.push_back(static_cast<unsigned char>(value));
             }
-            message.push_back(static_cast<unsigned char>(value));
+            if (!message.empty())
+                persistentMidiOutput->sendMessage(&message);
         }
-        if (!message.empty())
-            persistentMidiOutput->sendMessage(&message);
     }
     catch (MidiBackendError &error)
     {
