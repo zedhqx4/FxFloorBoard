@@ -97,13 +97,7 @@ MidiPage::MidiPage(QWidget *parent)
 	const int savedInputIndex = midiInCombo->findData(midiInDevice);
 	if (savedInputIndex >= 0)
 		midiInCombo->setCurrentIndex(savedInputIndex);
-	/*if ( midiInDevices.contains("BOSS GT-10") )
-  {
-    int inputDevice = midiInDevices.indexOf("BOSS GT-10") + 1;
-    midiInCombo->setCurrentIndex(inputDevice);
-	};  */
-	
-	QComboBox *midiOutCombo = new QComboBox;
+QComboBox *midiOutCombo = new QComboBox;
 	this->midiOutCombo = midiOutCombo;
 	midiOutCombo->addItem(QObject::tr("Select midi-out device"));
 	id = 0;
@@ -115,13 +109,7 @@ MidiPage::MidiPage(QWidget *parent)
 	const int savedOutputIndex = midiOutCombo->findData(midiOutDevice);
 	if (savedOutputIndex >= 0)
 		midiOutCombo->setCurrentIndex(savedOutputIndex);
-	/*if ( midiOutDevices.contains("BOSS GT-10") )
-  {
-    int outputDevice = midiOutDevices.indexOf("BOSS GT-10") + 1;
-    midiOutCombo->setCurrentIndex(outputDevice);
-  }; */
-
-	QVBoxLayout *midiLabelLayout = new QVBoxLayout;
+QVBoxLayout *midiLabelLayout = new QVBoxLayout;
 	midiLabelLayout->addWidget(midiInLabel);
 	midiLabelLayout->addWidget(midiOutLabel);
 
