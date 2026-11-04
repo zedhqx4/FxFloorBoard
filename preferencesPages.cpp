@@ -94,7 +94,12 @@ MidiPage::MidiPage(QWidget *parent)
 		QString str(*dev);
 		midiInCombo->addItem(str, midiIO::portSelectionKey(str));
     };
-	const int savedInputIndex = midiInCombo->findData(midiInDevice);
+	int savedInputIndex = midiInCombo->findData(midiInDevice);
+	if (savedInputIndex < 0 && !midiInDevice.isEmpty())
+	{
+		midiInCombo->addItem(QObject::tr("Unavailable: %1").arg(midiInDevice), midiInDevice);
+		savedInputIndex = midiInCombo->count() - 1;
+	}
 	if (savedInputIndex >= 0)
 		midiInCombo->setCurrentIndex(savedInputIndex);
 QComboBox *midiOutCombo = new QComboBox;
@@ -105,7 +110,12 @@ QComboBox *midiOutCombo = new QComboBox;
 		QString str(*dev);
 		midiOutCombo->addItem(str, midiIO::portSelectionKey(str));
     };
-	const int savedOutputIndex = midiOutCombo->findData(midiOutDevice);
+	int savedOutputIndex = midiOutCombo->findData(midiOutDevice);
+	if (savedOutputIndex < 0 && !midiOutDevice.isEmpty())
+	{
+		midiOutCombo->addItem(QObject::tr("Unavailable: %1").arg(midiOutDevice), midiOutDevice);
+		savedOutputIndex = midiOutCombo->count() - 1;
+	}
 	if (savedOutputIndex >= 0)
 		midiOutCombo->setCurrentIndex(savedOutputIndex);
 QVBoxLayout *midiLabelLayout = new QVBoxLayout;
