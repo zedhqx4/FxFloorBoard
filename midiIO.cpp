@@ -76,6 +76,69 @@ static MidiBackendOut *createMidiOut(const std::string &clientName, midiIO *owne
 #include "Preferences.h"
 #include "MidiTable.h"
 
+namespace
+{
+template <typename MidiBackend>
+bool resolveMidiPort(MidiBackend *backend, const QString &selectedPort,
+                     unsigned int &portIndex, midiIO *owner,
+                     const QString &direction)
+{
+    if (selectedPort.isEmpty())
+    {
+        owner->reportMidiBackendError(QObject::tr("MIDI Port Error"),
+            QObject::tr("No MIDI %1 port has been selected.").arg(direction));
+        return false;
+    }
+
+    const unsigned int portCount = backend->getPortCount();
+    unsigned int matches = 0;
+    for (unsigned int i = 0; i < portCount; ++i)
+    {
+        const QString currentName = QString::fromStdString(backend->getPortName(i));
+        if (midiIO::portSelectionKey(currentName) == selectedPort)
+        {
+            portIndex = i;
+            ++matches;
+        }
+    }
+
+    if (matches == 1)
+        return true;
+
+    const QString message = matches == 0
+        ? QObject::tr("The selected MIDI %1 port is no longer available: %2")
+              .arg(direction, selectedPort)
+        : QObject::tr("The selected MIDI %1 port is ambiguous. Please select it again: %2")
+              .arg(direction, selectedPort);
+    owner->reportMidiBackendError(QObject::tr("MIDI Port Error"), message);
+    return false;
+}
+}
+
+QString midiIO::portSelectionKey(const QString &portName)
+{
+#ifdef Q_OS_LINUX
+    // RtMidi's ALSA display name ends with a transient "client:port" address.
+    // Strip only that numeric suffix; it changes when ALSA clients are recreated.
+    const int addressSeparator = portName.lastIndexOf(' ');
+    if (addressSeparator > 0)
+    {
+        const QString address = portName.mid(addressSeparator + 1);
+        const int colon = address.indexOf(':');
+        if (colon > 0)
+        {
+            bool clientOk = false;
+            bool portOk = false;
+            address.left(colon).toUInt(&clientOk);
+            address.mid(colon + 1).toUInt(&portOk);
+            if (clientOk && portOk)
+                return portName.left(addressSeparator);
+        }
+    }
+#endif
+    return portName;
+}
+
 
 // Platform-dependent sleep routines.
 #ifdef Q_OS_WIN
@@ -221,7 +284,7 @@ QList<QString> midiIO::getMidiInDevices()
  * converts the message from a QString to a std::vector and opens, sends
  * and closes the MIDI device.
  *************************************************************************/
-void midiIO::sendSyxMsg(QString sysxOutMsg, int midiOutPort)
+void midiIO::sendSyxMsg(QString sysxOutMsg, const QString &midiOutPort)
 {
     MidiBackendOut *midiMsgOut = 0;
     bool portOpened = false;
@@ -239,7 +302,10 @@ void midiIO::sendSyxMsg(QString sysxOutMsg, int midiOutPort)
             reportMidiBackendError(tr("Syx Output Error"), tr("invalid hexadecimal message length"));
             goto cleanup;
         }
-        midiMsgOut->openPort(static_cast<unsigned int>(midiOutPort), clientName);
+        unsigned int portIndex = 0;
+        if (!resolveMidiPort(midiMsgOut, midiOutPort, portIndex, this, tr("output")))
+            goto cleanup;
+        midiMsgOut->openPort(portIndex, clientName);
         portOpened = true;
 
         std::vector<unsigned char> message;
@@ -291,7 +357,7 @@ cleanup:
     }
 };
 /*********** send midi messages *******************************/
-void midiIO::sendMidiMsg(QString sysxOutMsg, int midiOutPort)
+void midiIO::sendMidiMsg(QString sysxOutMsg, const QString &midiOutPort)
 {
     MidiBackendOut *midiMsgOut = 0;
     bool portOpened = false;
@@ -402,7 +468,7 @@ void midiIO::callbackMsg(QString rxData)
     QMutexLocker locker(&sysxBufferMutex);
     sysxBuffer.append(rxData);
 };
-void midiIO::receiveMsg(int midiInPort)
+void midiIO::receiveMsg(const QString &midiInPort)
 {
     count = 0;
     emit setStatusSymbol(3);
@@ -437,7 +503,10 @@ void midiIO::receiveMsg(int midiInPort)
         midiin->ignoreTypes(false, true, true);
         midiin->setCallback(&midicallback, this);
         callbackInstalled = true;
-        midiin->openPort(static_cast<unsigned int>(midiInPort), clientName);
+        unsigned int portIndex = 0;
+        if (!resolveMidiPort(midiin, midiInPort, portIndex, this, tr("input")))
+            goto cleanup;
+        midiin->openPort(portIndex, clientName);
         portOpened = true;
         sendSyxMsg(sysxOutMsg, midiOutPort);
         int elapsed = 0;
@@ -614,7 +683,7 @@ void midiIO::run()
 /*********************** sendSysxMsg() ***********************************
  * Starts a new thread that handles the send and receive of sysex messages.
  *************************************************************************/
-void midiIO::sendSysxMsg(QString sysxOutMsg, int midiOutPort, int midiInPort)
+void midiIO::sendSysxMsg(QString sysxOutMsg, const QString &midiOutPort, const QString &midiInPort)
 {
   QString reBuild;
   QString sysxEOF;
@@ -681,7 +750,7 @@ else
 /*********************** sendMidi() **********************************
  * Starts a new thread that handles the sending of the midi messages.
  **********************************************************************/
-void midiIO::sendMidi(QString midiMsg, int midiOutPort)
+void midiIO::sendMidi(QString midiMsg, const QString &midiOutPort)
 {
         this->midiOutPort = midiOutPort;
         this->midiMsg = midiMsg;
