@@ -40,12 +40,13 @@ class midiIO: public QThread
 public:
 	midiIO();
 	void run();
-	void sendSysxMsg(QString sysxOutMsg, int midiOutport, int midiInPort);
-	void sendMidi(QString midiMsg, int midiOutport);
+	void sendSysxMsg(QString sysxOutMsg, const QString &midiOutPort, const QString &midiInPort);
+	void sendMidi(QString midiMsg, const QString &midiOutPort);
 	void callbackMsg(QString rxData);
 	void reportMidiBackendError(QString windowTitle, QString errorMessage);
 	QList<QString> getMidiOutDevices();
 	QList<QString> getMidiInDevices();
+	static QString portSelectionKey(const QString &portName);
 		
 signals:
 	void errorSignal(QString windowTitle, QString errorMsg);
@@ -60,9 +61,9 @@ signals:
 private:
 	void queryMidiInDevices();
 	void queryMidiOutDevices();
-	void sendSyxMsg(QString sysxOutMsg, int midiOutport);
-	void sendMidiMsg(QString sysxOutMsg, int midiOutport);
-	void receiveMsg(int midiInPort);
+	void sendSyxMsg(QString sysxOutMsg, const QString &midiOutPort);
+	void sendMidiMsg(QString sysxOutMsg, const QString &midiOutPort);
+	void receiveMsg(const QString &midiInPort);
 	QList<QString> midiOutDevices;
 	QList<QString> midiInDevices;
 	
@@ -73,8 +74,8 @@ private:
 #ifdef Q_OS_LINUX
 	std::atomic<bool> midiBackendErrorOccurred;
 #endif
-	int midiOutPort;
-	int midiInPort;
+	QString midiOutPort;
+	QString midiInPort;
 	QString sysxOutMsg;
 	QString sysxInMsg;
 	QString midiMsg;
