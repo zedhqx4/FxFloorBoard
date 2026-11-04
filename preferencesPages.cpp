@@ -230,8 +230,6 @@ WindowPage::WindowPage(QWidget *parent)
 	this->sidepanelCheckBox = sidepanelCheckBox;
   this->singleWindowCheckBox = singleWindowCheckBox;
   this->widgetsCheckBox = widgetsCheckBox;
-    this->menuBarCheckBox = menuBarCheckBox;
-    if(menuBarVisible != "false") { menuBarCheckBox->setChecked(true); };
 
         if(windowRestore=="true") { windowCheckBox->setChecked(true); };
         if(sidepanelRestore=="true") { sidepanelCheckBox->setChecked(true); };
