@@ -342,6 +342,46 @@ midiIO::midiIO()
         QObject::connect(this, SIGNAL(replyMsg(QString)),	sysxIO, SLOT(receiveSysx(QString)));
         QObject::connect(this, SIGNAL(midiFinished()), sysxIO, SLOT(finishedSending()));
 };
+
+void midiIO::initializePersistentPorts(const QString &midiInSelection,
+                                       const QString &midiOutSelection)
+{
+    // Establish both ALSA sequencer connections during application startup.
+    // Keep the directions independent: a missing input must not prevent the
+    // output port (or vice versa) from being opened.
+    if (!midiOutSelection.isEmpty())
+    {
+        std::lock_guard<std::mutex> sessionLock(persistentMidiOutputMutex);
+        try
+        {
+            ensurePersistentOutput(midiOutSelection, this);
+        }
+        catch (MidiBackendError &error)
+        {
+            error.printMessage();
+            reportMidiBackendError(tr("MIDI Output Error"),
+                                   QString::fromStdString(error.getMessage()));
+        }
+        clearMidiErrorOwner(persistentMidiOutput.get());
+    }
+
+    if (!midiInSelection.isEmpty())
+    {
+        std::lock_guard<std::mutex> sessionLock(persistentMidiInputMutex);
+        try
+        {
+            ensurePersistentInput(midiInSelection, this);
+        }
+        catch (MidiBackendError &error)
+        {
+            error.printMessage();
+            reportMidiBackendError(tr("MIDI Input Error"),
+                                   QString::fromStdString(error.getMessage()));
+        }
+        clearMidiErrorOwner(persistentMidiInput.get());
+    }
+};
+};
 /*********************** queryMidiOutDevices() *****************************
  * Retrieves all MIDI Out devices installed on your system and stores them
  * as a QList of QStrings and device id's.
