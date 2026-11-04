@@ -217,6 +217,100 @@ bool midiIO::portSelectionMatches(const QString &savedSelection, const QString &
            (!savedStable.isEmpty() && savedStable == currentStable);
 }
 
+namespace
+{
+std::mutex persistentMidiInputMutex;
+std::mutex persistentMidiOutputMutex;
+std::unique_ptr<MidiBackendIn> persistentMidiInput;
+std::unique_ptr<MidiBackendOut> persistentMidiOutput;
+QString persistentMidiInputSelection;
+QString persistentMidiOutputSelection;
+
+#ifdef Q_OS_LINUX
+template <typename MidiBackend>
+void setMidiErrorOwner(MidiBackend *backend, midiIO *owner)
+{
+    backend->setErrorCallback(owner ? &midiBackendErrorCallback : 0, owner);
+}
+#else
+template <typename MidiBackend>
+void setMidiErrorOwner(MidiBackend *, midiIO *) {}
+#endif
+
+bool ensurePersistentOutput(const QString &selection, midiIO *owner)
+{
+    if (!persistentMidiOutput)
+        persistentMidiOutput.reset(createMidiOut("FxFloorBoard", owner));
+
+    setMidiErrorOwner(persistentMidiOutput.get(), owner);
+
+    if (persistentMidiOutput->isPortOpen() && persistentMidiOutputSelection != selection)
+        persistentMidiOutput->closePort();
+
+    if (!persistentMidiOutput->isPortOpen())
+    {
+        unsigned int portIndex = 0;
+        if (!resolveMidiPort(persistentMidiOutput.get(), selection, portIndex, owner, QObject::tr("output")))
+            return false;
+
+        persistentMidiOutput->openPort(portIndex, "FxFloorBoard");
+        if (!persistentMidiOutput->isPortOpen())
+        {
+            owner->reportMidiBackendError(QObject::tr("MIDI Output Error"),
+                QObject::tr("The selected MIDI output port could not be opened."));
+            return false;
+        }
+        persistentMidiOutputSelection = selection;
+    }
+    return true;
+}
+
+bool ensurePersistentInput(const QString &selection, midiIO *owner)
+{
+    if (!persistentMidiInput)
+        persistentMidiInput.reset(createMidiIn("FxFloorBoard", owner));
+
+    setMidiErrorOwner(persistentMidiInput.get(), owner);
+
+    if (persistentMidiInput->isPortOpen() && persistentMidiInputSelection != selection)
+        persistentMidiInput->closePort();
+
+    if (!persistentMidiInput->isPortOpen())
+    {
+        unsigned int portIndex = 0;
+        if (!resolveMidiPort(persistentMidiInput.get(), selection, portIndex, owner, QObject::tr("input")))
+            return false;
+
+#ifdef Q_OS_LINUX
+        // GT-10 patch and system replies exceed RtMidi's 1 KiB default input buffer.
+        persistentMidiInput->setBufferSize(4096, 4);
+#endif
+        persistentMidiInput->ignoreTypes(false, true, true);
+        persistentMidiInput->openPort(portIndex, "FxFloorBoard");
+        if (!persistentMidiInput->isPortOpen())
+        {
+            owner->reportMidiBackendError(QObject::tr("MIDI Input Error"),
+                QObject::tr("The selected MIDI input port could not be opened."));
+            return false;
+        }
+        persistentMidiInputSelection = selection;
+    }
+    return true;
+}
+
+void clearMidiErrorOwner(MidiBackendIn *backend)
+{
+    if (backend)
+        setMidiErrorOwner(backend, 0);
+}
+
+void clearMidiErrorOwner(MidiBackendOut *backend)
+{
+    if (backend)
+        setMidiErrorOwner(backend, 0);
+}
+}
+
 // Platform-dependent sleep routines.
 #ifdef Q_OS_WIN
   #include <windows.h>
@@ -335,59 +429,51 @@ QList<QString> midiIO::getMidiInDevices()
  *************************************************************************/
 void midiIO::sendSyxMsg(QString sysxOutMsg, const QString &midiOutPort)
 {
-    MidiBackendOut *midiMsgOut = 0;
-    bool portOpened = false;
-    const std::string clientName = "FxFloorBoard";
+    std::lock_guard<std::mutex> sessionLock(persistentMidiOutputMutex);
     try
     {
-        midiMsgOut = createMidiOut(clientName, this);
-        if (midiMsgOut->getPortCount() < 1)
-        {
-            reportMidiBackendError(tr("Syx Output Error"), tr("no MIDI output device available"));
+        if (!ensurePersistentOutput(midiOutPort, this))
             goto cleanup;
-        }
+
         if ((sysxOutMsg.size() % 2) != 0)
         {
             reportMidiBackendError(tr("Syx Output Error"), tr("invalid hexadecimal message length"));
             goto cleanup;
         }
-        unsigned int portIndex = 0;
-        if (!resolveMidiPort(midiMsgOut, midiOutPort, portIndex, this, tr("output")))
-            goto cleanup;
-        midiMsgOut->openPort(portIndex, clientName);
-        portOpened = true;
 
-        std::vector<unsigned char> message;
-        message.reserve(256);
-        int bytesSinceLastFrame = 0;
-        const int totalBytes = sysxOutMsg.size() / 2;
-        for (int i = 0; i < totalBytes; ++i)
         {
-            bool ok = false;
-            const unsigned int value = sysxOutMsg.mid(i * 2, 2).toUInt(&ok, 16);
-            if (!ok || value > 0xFF)
+            std::vector<unsigned char> message;
+            message.reserve(256);
+            int bytesSinceLastFrame = 0;
+            const int totalBytes = sysxOutMsg.size() / 2;
+            for (int i = 0; i < totalBytes; ++i)
             {
-                reportMidiBackendError(tr("Syx Output Error"), tr("invalid hexadecimal byte in SysEx message"));
-                goto cleanup;
+                bool ok = false;
+                const unsigned int value = sysxOutMsg.mid(i * 2, 2).toUInt(&ok, 16);
+                if (!ok || value > 0xFF)
+                {
+                    reportMidiBackendError(tr("Syx Output Error"), tr("invalid hexadecimal byte in SysEx message"));
+                    goto cleanup;
+                }
+                if (message.empty() && value != 0xF0)
+                {
+                    reportMidiBackendError(tr("Syx Output Error"), tr("SysEx frame does not start with F0"));
+                    goto cleanup;
+                }
+                message.push_back(static_cast<unsigned char>(value));
+                ++bytesSinceLastFrame;
+                emit setStatusProgress((i + 1) * 100 / (totalBytes > 0 ? totalBytes : 1));
+                if (value == 0xF7)
+                {
+                    persistentMidiOutput->sendMessage(&message);
+                    SLEEP((bytesSinceLastFrame * 1000 + 3124) / 3125);
+                    message.clear();
+                    bytesSinceLastFrame = 0;
+                }
             }
-            if (message.empty() && value != 0xF0)
-            {
-                reportMidiBackendError(tr("Syx Output Error"), tr("SysEx frame does not start with F0"));
-                goto cleanup;
-            }
-            message.push_back(static_cast<unsigned char>(value));
-            ++bytesSinceLastFrame;
-            emit setStatusProgress((i + 1) * 100 / (totalBytes > 0 ? totalBytes : 1));
-            if (value == 0xF7)
-            {
-                midiMsgOut->sendMessage(&message);
-                SLEEP((bytesSinceLastFrame * 1000 + 3124) / 3125); // Drain at DIN MIDI's 3125-byte/s rate.
-                message.clear();
-                bytesSinceLastFrame = 0;
-            }
+            if (!message.empty())
+                reportMidiBackendError(tr("Syx Output Error"), tr("unterminated SysEx frame (missing F7)"));
         }
-        if (!message.empty())
-            reportMidiBackendError(tr("Syx Output Error"), tr("unterminated SysEx frame (missing F7)"));
     }
     catch (MidiBackendError &error)
     {
@@ -395,40 +481,24 @@ void midiIO::sendSyxMsg(QString sysxOutMsg, const QString &midiOutPort)
         reportMidiBackendError(tr("Syx Output Error"), QString::fromStdString(error.getMessage()));
     }
 cleanup:
-    if (midiMsgOut)
-    {
-        if (portOpened)
-        {
-            try { midiMsgOut->closePort(); }
-            catch (MidiBackendError &error) { error.printMessage(); reportMidiBackendError(tr("MIDI Output Error"), QString::fromStdString(error.getMessage())); }
-        }
-        delete midiMsgOut;
-    }
+    clearMidiErrorOwner(persistentMidiOutput.get());
 };
 /*********** send midi messages *******************************/
+
 void midiIO::sendMidiMsg(QString sysxOutMsg, const QString &midiOutPort)
 {
-    MidiBackendOut *midiMsgOut = 0;
-    bool portOpened = false;
-    const std::string clientName = "FxFloorBoard";
+    std::lock_guard<std::mutex> sessionLock(persistentMidiOutputMutex);
     try
     {
-        midiMsgOut = createMidiOut(clientName, this);
-        if (midiMsgOut->getPortCount() < 1)
-        {
-            reportMidiBackendError(tr("Midi Output Error"), tr("no MIDI output device available"));
+        if (!ensurePersistentOutput(midiOutPort, this))
             goto cleanup;
-        }
+
         if ((sysxOutMsg.size() % 2) != 0)
         {
             reportMidiBackendError(tr("Midi Output Error"), tr("invalid hexadecimal message length"));
             goto cleanup;
         }
-        unsigned int portIndex = 0;
-        if (!resolveMidiPort(midiMsgOut, midiOutPort, portIndex, this, tr("output")))
-            goto cleanup;
-        midiMsgOut->openPort(portIndex, clientName);
-        portOpened = true;
+
         std::vector<unsigned char> message;
         message.reserve(static_cast<size_t>(sysxOutMsg.size() / 2));
         for (int i = 0; i < sysxOutMsg.size(); i += 2)
@@ -443,7 +513,7 @@ void midiIO::sendMidiMsg(QString sysxOutMsg, const QString &midiOutPort)
             message.push_back(static_cast<unsigned char>(value));
         }
         if (!message.empty())
-            midiMsgOut->sendMessage(&message);
+            persistentMidiOutput->sendMessage(&message);
     }
     catch (MidiBackendError &error)
     {
@@ -451,21 +521,10 @@ void midiIO::sendMidiMsg(QString sysxOutMsg, const QString &midiOutPort)
         reportMidiBackendError(tr("Midi Output Error"), QString::fromStdString(error.getMessage()));
     }
 cleanup:
-    if (midiMsgOut)
-    {
-        if (portOpened)
-        {
-            try { midiMsgOut->closePort(); }
-            catch (MidiBackendError &error) { error.printMessage(); }
-        }
-        delete midiMsgOut;
-    }
+    clearMidiErrorOwner(persistentMidiOutput.get());
 };
 /*********************** receiveMsg() **********************************
- * Prepares the sysx message after receiving on the MIDI In device. It
- *  and opens, receives and closes the MIDI device then converts the
- *  message from a std::vector to a QString.
- *************************************************************************/
+
 void midicallback(double deltatime, std::vector<unsigned char> *message, void *userData)
 {
     Q_UNUSED(deltatime);
