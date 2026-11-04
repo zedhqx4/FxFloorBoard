@@ -37,7 +37,7 @@ class floorBoard : public QWidget
 public:
     floorBoard(
 		QWidget *parent = 0,
-		QString imagePathFloor = ":/images/floor.png",
+		QString imagePathFloor = ":/images/floor-gt10.png",
 		QString imagePathStompBG = ":/images/stompbg.png",
 		QString imagePathInfoBar = ":/images/infobar.png",
         unsigned int marginStompBoxesTop = 175,
