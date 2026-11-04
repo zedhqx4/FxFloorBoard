@@ -684,8 +684,8 @@ void mainWindow::settings()
         // Menu bar visibility preference retained but disabled for now.
         // QString menuBarVisible = (dialog->windowSettings->menuBarCheckBox->checkState())?QString("true"):QString("false");
         QString dBug = (dialog->midiSettings->dBugCheckBox->checkState())?QString("true"):QString("false");
-        QString midiIn = QString::number(dialog->midiSettings->midiInCombo->currentIndex() - 1, 10); // -1 because there is a default entry at index 0
-        QString midiOut = QString::number(dialog->midiSettings->midiOutCombo->currentIndex() - 1, 10);
+        QString midiIn = dialog->midiSettings->midiInCombo->currentData().toString();
+        QString midiOut = dialog->midiSettings->midiOutCombo->currentData().toString();
         QString midiTimeSet =QString::number(dialog->midiSettings->midiTimeSpinBox->value());
         QString receiveTimeout =QString::number(dialog->midiSettings->midiDelaySpinBox->value());
         QString lang;
@@ -695,8 +695,7 @@ void mainWindow::settings()
         else {lang="0"; };
         preferences->setPreferences("Language", "Locale", "select", lang);
 
-        if(midiIn=="-1") { midiIn = ""; };
-        if(midiOut=="-1") {	midiOut = ""; };
+
 
         preferences->setPreferences("General", "Files", "dir", dir);
         preferences->setPreferences("Midi", "MidiIn", "device", midiIn);
