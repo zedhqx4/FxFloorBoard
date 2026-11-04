@@ -77,48 +77,10 @@ static MidiBackendOut *createMidiOut(const std::string &clientName, midiIO *owne
 
 namespace
 {
-template <typename MidiBackend>
-bool resolveMidiPort(MidiBackend *backend, const QString &selectedPort,
-                     unsigned int &portIndex, midiIO *owner,
-                     const QString &direction)
-{
-    if (selectedPort.isEmpty())
-    {
-        owner->reportMidiBackendError(QObject::tr("MIDI Port Error"),
-            QObject::tr("No MIDI %1 port has been selected.").arg(direction));
-        return false;
-    }
-
-    const unsigned int portCount = backend->getPortCount();
-    unsigned int matches = 0;
-    for (unsigned int i = 0; i < portCount; ++i)
-    {
-        const QString currentName = QString::fromStdString(backend->getPortName(i));
-        if (midiIO::portSelectionKey(currentName) == selectedPort)
-        {
-            portIndex = i;
-            ++matches;
-        }
-    }
-
-    if (matches == 1)
-        return true;
-
-    const QString message = matches == 0
-        ? QObject::tr("The selected MIDI %1 port is no longer available: %2")
-              .arg(direction, selectedPort)
-        : QObject::tr("The selected MIDI %1 port is ambiguous. Please select it again: %2")
-              .arg(direction, selectedPort);
-    owner->reportMidiBackendError(QObject::tr("MIDI Port Error"), message);
-    return false;
-}
-}
-
-QString midiIO::portSelectionKey(const QString &portName)
+QString stablePortNameKey(const QString &portName)
 {
 #ifdef Q_OS_LINUX
-    // RtMidi's ALSA display name ends with a transient "client:port" address.
-    // Strip only that numeric suffix; it changes when ALSA clients are recreated.
+    // ALSA's display name ends with a transient numeric "client:port" address.
     const int addressSeparator = portName.lastIndexOf(' ');
     if (addressSeparator > 0)
     {
@@ -138,6 +100,104 @@ QString midiIO::portSelectionKey(const QString &portName)
     return portName;
 }
 
+bool decodePortSelectionKey(const QString &selection, QString &exactName, QString &stableName)
+{
+    const int separator = selection.indexOf(':');
+    bool lengthOk = false;
+    const int exactLength = separator > 0 ? selection.left(separator).toInt(&lengthOk) : -1;
+    if (lengthOk && exactLength >= 0 && separator + 1 + exactLength <= selection.size())
+    {
+        exactName = selection.mid(separator + 1, exactLength);
+        stableName = selection.mid(separator + 1 + exactLength);
+        if (stableName.isEmpty())
+            stableName = stablePortNameKey(exactName);
+        return true;
+    }
+
+    exactName = selection;
+    bool legacyIndex = false;
+    selection.toUInt(&legacyIndex, 10);
+    stableName = legacyIndex ? QString() : stablePortNameKey(selection);
+    return false;
+}
+
+template <typename MidiBackend>
+bool resolveMidiPort(MidiBackend *backend, const QString &selectedPort,
+                     unsigned int &portIndex, midiIO *owner,
+                     const QString &direction)
+{
+    if (selectedPort.isEmpty())
+    {
+        owner->reportMidiBackendError(QObject::tr("MIDI Port Error"),
+            QObject::tr("No MIDI %1 port has been selected.").arg(direction));
+        return false;
+    }
+
+    QString exactName;
+    QString stableName;
+    decodePortSelectionKey(selectedPort, exactName, stableName);
+
+    const unsigned int portCount = backend->getPortCount();
+    unsigned int exactMatches = 0;
+    unsigned int stableMatches = 0;
+    unsigned int stablePortIndex = 0;
+    for (unsigned int i = 0; i < portCount; ++i)
+    {
+        const QString currentName = QString::fromStdString(backend->getPortName(i));
+        if (currentName == exactName)
+        {
+            portIndex = i;
+            ++exactMatches;
+        }
+        if (!stableName.isEmpty() && stablePortNameKey(currentName) == stableName)
+        {
+            stablePortIndex = i;
+            ++stableMatches;
+        }
+    }
+
+    if (exactMatches == 1)
+        return true;
+    if (exactMatches > 1)
+    {
+        owner->reportMidiBackendError(QObject::tr("MIDI Port Error"),
+            QObject::tr("The selected MIDI %1 port is ambiguous. Please select it again: %2")
+                .arg(direction, selectedPort));
+        return false;
+    }
+    if (stableMatches == 1)
+    {
+        portIndex = stablePortIndex;
+        return true;
+    }
+
+    const QString message = stableMatches == 0
+        ? QObject::tr("The selected MIDI %1 port is no longer available: %2")
+              .arg(direction, selectedPort)
+        : QObject::tr("The selected MIDI %1 port is ambiguous. Please select it again: %2")
+              .arg(direction, selectedPort);
+    owner->reportMidiBackendError(QObject::tr("MIDI Port Error"), message);
+    return false;
+}
+}
+
+QString midiIO::portSelectionKey(const QString &portName)
+{
+    const QString stableName = stablePortNameKey(portName);
+    return QString::number(portName.size()) + ":" + portName + stableName;
+}
+
+bool midiIO::portSelectionMatches(const QString &savedSelection, const QString &currentSelection)
+{
+    QString savedExact;
+    QString savedStable;
+    QString currentExact;
+    QString currentStable;
+    decodePortSelectionKey(savedSelection, savedExact, savedStable);
+    decodePortSelectionKey(currentSelection, currentExact, currentStable);
+    return savedExact == currentExact ||
+           (!savedStable.isEmpty() && savedStable == currentStable);
+}
 
 // Platform-dependent sleep routines.
 #ifdef Q_OS_WIN
