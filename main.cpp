@@ -29,6 +29,7 @@
 #include "SysxIO.h"
 #include "sysxWriter.h"
 #include "customSplashScreen.h"
+#include "midiIO.h"
 
 int main(int argc, char **argv)
 {
@@ -86,6 +87,13 @@ int main(int argc, char **argv)
     app.processEvents();
 
     mainWindow window;// = new mainWindow;
+
+    // Keep a MIDI owner alive for the entire application lifetime and open
+    // the selected input/output ports before the main window is shown.
+    midiIO startupMidi;
+    startupMidi.initializePersistentPorts(
+        preferences->getPreferences("Midi", "MidiIn", "device"),
+        preferences->getPreferences("Midi", "MidiOut", "device"));
 
     QObject::connect( &window, SIGNAL(closed()), &app, SLOT(quit()) );
 
