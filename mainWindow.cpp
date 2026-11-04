@@ -46,8 +46,6 @@ mainWindow::mainWindow()
     bar->setNativeMenuBar(false);
     
     floorBoard *fxsBoard = new floorBoard(this);
-    Preferences *startupPreferences = Preferences::Instance();
-    startupPreferences->getPreferences("Window", "MenuBar", "visible");
     bar->setVisible(true);
     
     /* Loads the stylesheet for the current platform if present */
@@ -680,7 +678,6 @@ void mainWindow::settings()
         QString singleWindow = (dialog->windowSettings->singleWindowCheckBox->checkState())?QString("true"):QString("false");
         QString widgetHelp = (dialog->windowSettings->widgetsCheckBox->checkState())?QString("true"):QString("false");
         QString splash = (dialog->windowSettings->splashCheckBox->checkState())?QString("true"):QString("false");
-        QString menuBarVisible = (dialog->windowSettings->menuBarCheckBox->checkState())?QString("true"):QString("false");
         QString dBug = (dialog->midiSettings->dBugCheckBox->checkState())?QString("true"):QString("false");
         QString midiIn = QString::number(dialog->midiSettings->midiInCombo->currentIndex() - 1, 10); // -1 because there is a default entry at index 0
         QString midiOut = QString::number(dialog->midiSettings->midiOutCombo->currentIndex() - 1, 10);
@@ -707,8 +704,6 @@ void mainWindow::settings()
         preferences->setPreferences("Window", "Single", "bool", singleWindow);
         preferences->setPreferences("Window", "Widgets", "bool", widgetHelp);
         preferences->setPreferences("Window", "Splash", "bool", splash);
-        preferences->setPreferences("Window", "MenuBar", "visible", menuBarVisible);
-        menuBar()->setVisible(menuBarVisible == "true");
         preferences->savePreferences();
     };
 }
