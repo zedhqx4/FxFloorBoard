@@ -782,16 +782,10 @@ void SysxIO::sendMidi(QString midiMsg)
 {
 	if(isConnected())
 	{
-		Preferences *preferences = Preferences::Instance(); bool ok;
-		int midiOutPort = preferences->getPreferences("Midi", "MidiOut", "device").toInt(&ok, 10);	// Get midi out device from preferences.
-		
-		midiIO *midi = new midiIO();
-		QList<QString> midiOutDevices = midi->getMidiOutDevices();
-	  if ( midiOutDevices.contains("BOSS GT-10") )
-    {
-      midiOutPort = midiOutDevices.indexOf("BOSS GT-10")+1;
-    }; 
+		Preferences *preferences = Preferences::Instance();
+		const QString midiOutPort = preferences->getPreferences("Midi", "MidiOut", "device");
 
+		midiIO *midi = new midiIO();
 		midi->sendMidi(midiMsg, midiOutPort);
 			 /*DeBugGING OUTPUT */
 	if(preferences->getPreferences("Midi", "DBug", "bool")=="true")
@@ -903,21 +897,11 @@ void SysxIO::checkPatchChange(QString name)
 *****************************************************************************/
 void SysxIO::sendSysx(QString sysxMsg)
 {
-	Preferences *preferences = Preferences::Instance();  bool ok;
-	int midiOutPort = preferences->getPreferences("Midi", "MidiOut", "device").toInt(&ok, 10);	// Get midi out device from preferences.
-	int midiInPort = preferences->getPreferences("Midi", "MidiIn", "device").toInt(&ok, 10);	// Get midi in device from preferences.
-	
+	Preferences *preferences = Preferences::Instance();
+	const QString midiOutPort = preferences->getPreferences("Midi", "MidiOut", "device");
+	const QString midiInPort = preferences->getPreferences("Midi", "MidiIn", "device");
+
 	midiIO *midi = new midiIO();
-    QList<QString> midiInDevices = midi->getMidiInDevices();
-	  QList<QString> midiOutDevices = midi->getMidiOutDevices();
-	  if ( midiInDevices.contains("BOSS GT-10") )
-    {
-      midiInPort = midiInDevices.indexOf("BOSS GT-10")+1;
-    };
-	  if ( midiOutDevices.contains("BOSS GT-10") )
-    {
-      midiOutPort = midiOutDevices.indexOf("BOSS GT-10")+1;
-    };  
 	midi->sendSysxMsg(sysxMsg, midiOutPort, midiInPort);
 			 /*DeBugGING OUTPUT */
 	if(preferences->getPreferences("Midi", "DBug", "bool")=="true")
